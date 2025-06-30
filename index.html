@@ -14,10 +14,10 @@
     
     <style>
         :root {
-            --primary-color: #1e90ff;
-            --success-color: #2ecc71;
-            --error-color: #e74c3c;
-            --bg-gradient: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
+            --primary-color: #007BFF;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+            --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
         }
 
         body {
@@ -36,7 +36,7 @@
             background: #fff;
             padding: 40px 30px;
             border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
             width: 100%;
             max-width: 420px;
             text-align: center;
@@ -108,7 +108,7 @@
         
         input[type="password"], input[type="text"] {
             width: 100%;
-            padding: 14px 16px;
+            padding: 14px 45px 14px 16px; /* ডান দিকে আইকনের জন্য জায়গা */
             border: 1px solid #dce4ec;
             border-radius: 8px;
             font-size: 1em;
@@ -118,7 +118,7 @@
 
         input:focus {
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(30, 144, 255, 0.2);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
             outline: none;
         }
 
@@ -131,7 +131,7 @@
             text-align: center;
         }
 
-        button.primary-btn {
+        a.primary-btn, button.primary-btn {
             width: 100%;
             padding: 14px;
             border: none;
@@ -141,20 +141,24 @@
             font-size: 1.1em;
             font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.25s, transform 0.2s;
-            margin-top: 10px;
-            box-shadow: 0 4px 15px rgba(30, 144, 255, 0.2);
-            text-decoration: none; /* For <a> tag */
-            display: inline-block; /* For <a> tag */
-            box-sizing: border-box; /* For <a> tag */
+            transition: background-color 0.25s, transform 0.2s, box-shadow 0.2s;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.2);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-sizing: border-box;
         }
 
-        button.primary-btn:hover, a.primary-btn:hover {
-            background-color: #1c86ee;
+        a.primary-btn:hover, button.primary-btn:hover {
+            background-color: #0069d9;
             transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 123, 255, 0.3);
         }
         
-        button.primary-btn:active, a.primary-btn:active {
+        a.primary-btn:active, button.primary-btn:active {
             transform: translateY(0);
         }
 
@@ -168,58 +172,50 @@
             display: none; /* Hidden by default */
             line-height: 1.4;
         }
-        .success-message { color: #27ae60; background-color: #eafaf1; border: 1px solid #a9dfbf; display: block; }
+        .success-message { color: var(--success-color); background-color: #eafaf1; border: 1px solid #a9dfbf; display: block; }
         .error-message { color: var(--error-color); background-color: #fbebec; border: 1px solid #f1c4c0; display: block; }
-        .info-message { color: #2980b9; background-color: #ebf5fb; border: 1px solid #aed6f1; display: block; }
+        .info-message { color: #004085; background-color: #cce5ff; border: 1px solid #b8daff; display: block; }
         
-        /* Success Animation */
+        /* FINAL Success Animation using SVG */
         .success-animation-container {
-            padding: 20px 0;
-            transform: scale(0);
-            animation: scaleUp 0.4s 0.2s forwards ease-out;
+            margin: 20px auto;
         }
-        @keyframes scaleUp {
-            to { transform: scale(1); }
-        }
-
-        .checkmark-circle {
+        .checkmark {
             width: 100px;
             height: 100px;
             border-radius: 50%;
-            display: inline-block;
-            background: var(--success-color);
-            position: relative;
+            display: block;
+            stroke-width: 4;
+            stroke: #fff;
+            stroke-miterlimit: 10;
+            box-shadow: inset 0px 0px 0px var(--success-color);
+            animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+            margin: 0 auto;
         }
-        .checkmark-stem {
-            position: absolute;
-            width: 5px;
-            height: 50px;
-            background-color: #fff;
-            left: 48px;
-            top: 25px;
-            transform: rotate(-45deg);
-            animation: drawStem 0.3s 0.5s ease-out forwards;
-            transform-origin: top left;
+        .checkmark__circle {
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            stroke-width: 4;
+            stroke-miterlimit: 10;
+            stroke: var(--success-color);
+            fill: none;
+            animation: stroke .6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
         }
-        .checkmark-kick {
-            position: absolute;
-            width: 5px;
-            height: 25px;
-            background-color: #fff;
-            left: 28px;
-            top: 60px;
-            transform: rotate(45deg);
-            animation: drawKick 0.3s 0.8s ease-out forwards;
-            transform-origin: top left;
+        .checkmark__check {
+            transform-origin: 50% 50%;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: stroke .3s cubic-bezier(0.65, 0, 0.45, 1) .8s forwards;
         }
-
-        @keyframes drawStem {
-            from { height: 0; }
-            to { height: 50px; }
+        @keyframes stroke {
+            100% { stroke-dashoffset: 0; }
         }
-        @keyframes drawKick {
-            from { height: 0; }
-            to { height: 25px; }
+        @keyframes scale {
+            0%, 100% { transform: none; }
+            50% { transform: scale3d(1.1, 1.1, 1); }
+        }
+        @keyframes fill {
+            100% { box-shadow: inset 0px 0px 0px 50px var(--success-color); }
         }
     </style>
 </head>
@@ -232,7 +228,7 @@
             <h1 class="app-name">TapTak</h1>
         </div>
         
-        <!-- Content will be injected by JavaScript -->
+        <!-- Content Area -->
         <div id="content-area">
             <h2>Loading...</h2>
             <p class="subtitle">Please wait while we process your request.</p>
@@ -317,7 +313,7 @@
                     <div class="form-group">
                         <label for="new-password">New Password</label>
                         <div class="password-wrapper">
-                           <input type="password" id="new-password" required placeholder="••••••••">
+                           <input type="text" id="new-password" required placeholder="••••••••" style="-webkit-text-security: disc;">
                            <span class="password-toggle-icon" onclick="togglePasswordVisibility('new-password', this)"><i class="fas fa-eye"></i></span>
                         </div>
                     </div>
@@ -331,19 +327,18 @@
                         showMessage('Password must be at least 6 characters long.', 'error');
                         return;
                     }
-
                     showMessage('Saving new password...', 'info');
                     auth.confirmPasswordReset(code, newPassword).then(() => {
                         contentArea.innerHTML = `
                             <div class="success-animation-container">
-                                <div class="checkmark-circle">
-                                    <div class="checkmark-stem"></div>
-                                    <div class="checkmark-kick"></div>
-                                </div>
+                                <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                                    <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+                                    <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                                </svg>
                             </div>
                             <h2>Success!</h2>
                             <p class="subtitle success-message">Your password has been changed successfully.</p>
-                            <a href="./index.html" class="primary-btn">Back to App</a>
+                            <a href="./index.html" class="primary-btn"><i class="fas fa-arrow-left"></i> Back to App and Login</a>
                         `;
                     }).catch(err => {
                         showMessage(`Error: ${err.message}`, 'error');
@@ -360,14 +355,14 @@
             auth.applyActionCode(code).then(() => {
                 contentArea.innerHTML = `
                     <div class="success-animation-container">
-                        <div class="checkmark-circle">
-                            <div class="checkmark-stem"></div>
-                            <div class="checkmark-kick"></div>
-                        </div>
+                        <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                            <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+                            <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                        </svg>
                     </div>
                     <h2>Email Verified!</h2>
                     <p class="subtitle success-message">Thank you! Your email address has been successfully verified.</p>
-                    <a href="./index.html" class="primary-btn">Continue to Login</a>
+                    <a href="./index.html" class="primary-btn"><i class="fas fa-sign-in-alt"></i> Continue to Login</a>
                 `;
             }).catch(err => {
                 contentArea.innerHTML = `<h2>Verification Failed</h2><p class="subtitle error-message">This verification link is invalid or has expired. Please try to log in again to receive a new link.</p>`;
