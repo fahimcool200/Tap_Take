@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Actions - TapTak</title>
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(120deg, #f6d365 0%, #fda085 100%);
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background: #fff;
+            padding: 30px 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        h2 {
+            margin-bottom: 25px;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        .form-group {
+            margin-bottom: 18px;
+            text-align: left;
+            position: relative;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #555;
+        }
+        input[type="password"], input[type="email"] {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #dce4ec;
+            border-radius: 8px;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+        .password-toggle-icon {
+            position: absolute;
+            top: calc(50% + 10px);
+            right: 12px;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #999;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background-color: #1e90ff;
+            color: white;
+            font-size: 1.05em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.25s ease;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #1c86ee;
+        }
+        .message-area {
+            min-height: 40px;
+            margin-top: 15px;
+            font-weight: 500;
+            font-size: 0.95em;
+            padding: 12px;
+            border-radius: 6px;
+            display: none; /* Hidden by default */
+        }
+        .success-message {
+            color: #1e8449;
+            background-color: #d4efdf;
+            border: 1px solid #a9dfbf;
+            display: block;
+        }
+        .error-message {
+            color: #e74c3c;
+            background-color: #fadbd8;
+            border: 1px solid #f1c4c0;
+            display: block;
+        }
+        .info-message {
+             color: #2980b9;
+             background-color: #ebf5fb;
+             border: 1px solid #aed6f1;
+             display: block;
+        }
+        .login-link {
+            margin-top: 20px;
+            font-size: 0.95em;
+        }
+        .login-link a {
+            color: #1e90ff;
+            text-decoration: none;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="action-container">
+        <!-- Content will be injected by JavaScript -->
+        <h2>Loading...</h2>
+        <p>Please wait while we process your request.</p>
+    </div>
+
+    <script>
+        // --- Firebase Configuration (আপনার আগের কনফিগারেশনটি এখানে দিন) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyB48gD1mAzw-4J_1OvO-rdbzlAUDtUQZpQ",
+            authDomain: "income-app-ads.firebaseapp.com",
+            databaseURL: "https://income-app-ads-default-rtdb.firebaseio.com",
+            projectId: "income-app-ads",
+            storageBucket: "income-app-ads.firebasestorage.app",
+            messagingSenderId: "82757131654",
+            appId: "1:82757131654:web:22351a172ba7ea0a356007",
+            measurementId: "G-FNS2Z4H8QV"
+        };
+        
+        // --- Initialize Firebase ---
+        let auth;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            auth = firebase.auth();
+        } catch (e) {
+            console.error("Firebase init error:", e);
+            document.getElementById('action-container').innerHTML = `<h2>Initialization Error</h2><p class="error-message">Could not connect to services. Please try again later.</p>`;
+        }
+
+        const actionContainer = document.getElementById('action-container');
+
+        // Function to show messages
+        function showMessage(msg, type) {
+            const messageDiv = actionContainer.querySelector('#message-area');
+            if(messageDiv) {
+                messageDiv.innerHTML = msg;
+                messageDiv.className = `message-area ${type}-message`;
+            }
+        }
+        
+        // Function to toggle password visibility
+        function togglePasswordVisibility(id, icon) {
+            const input = document.getElementById(id);
+            if(input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // --- Main Logic to Handle Actions ---
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!auth) return;
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const mode = urlParams.get('mode');
+            const oobCode = urlParams.get('oobCode');
+
+            if (!mode || !oobCode) {
+                actionContainer.innerHTML = `<h2>Invalid Link</h2><p class="error-message">This link is invalid or has expired. Please try again.</p>`;
+                return;
+            }
+
+            switch (mode) {
+                case 'resetPassword':
+                    handlePasswordReset(oobCode);
+                    break;
+                case 'verifyEmail':
+                    handleEmailVerification(oobCode);
+                    break;
+                default:
+                    actionContainer.innerHTML = `<h2>Unknown Action</h2><p class="error-message">The requested action is not recognized.</p>`;
+            }
+        });
+        
+        function handlePasswordReset(code) {
+            auth.verifyPasswordResetCode(code).then(email => {
+                actionContainer.innerHTML = `
+                    <h2>Reset Your Password</h2>
+                    <p style="font-size:0.9em; color:#666; margin-bottom: 20px;">Enter a new password for your account: <strong>${email}</strong></p>
+                    <div class="form-group">
+                        <label for="new-password">New Password</label>
+                        <input type="password" id="new-password" required>
+                        <i class="fas fa-eye password-toggle-icon" onclick="togglePasswordVisibility('new-password', this)"></i>
+                    </div>
+                    <button id="confirm-reset-btn">Save New Password</button>
+                    <div id="message-area" class="message-area"></div>
+                `;
+
+                document.getElementById('confirm-reset-btn').addEventListener('click', () => {
+                    const newPassword = document.getElementById('new-password').value;
+                    if (newPassword.length < 6) {
+                        showMessage('Password must be at least 6 characters long.', 'error');
+                        return;
+                    }
+
+                    showMessage('Saving new password...', 'info');
+                    auth.confirmPasswordReset(code, newPassword).then(() => {
+                        actionContainer.innerHTML = `
+                            <h2>Success!</h2>
+                            <p class="success-message">Your password has been changed successfully.</p>
+                            <div class="login-link">
+                                You can now return to the app and log in with your new password.
+                            </div>
+                        `;
+                    }).catch(err => {
+                        showMessage(`Error: ${err.message}`, 'error');
+                    });
+                });
+
+            }).catch(err => {
+                actionContainer.innerHTML = `<h2>Link Expired</h2><p class="error-message">This password reset link is invalid or has expired. Please request a new one from the app.</p>`;
+            });
+        }
+
+        function handleEmailVerification(code) {
+            actionContainer.innerHTML = `<h2>Verifying Your Email...</h2><p class="info-message">Please wait a moment.</p>`;
+            auth.applyActionCode(code).then(() => {
+                actionContainer.innerHTML = `
+                    <h2>Email Verified!</h2>
+                    <p class="success-message">Thank you! Your email address has been successfully verified.</p>
+                    <div class="login-link">
+                       You can now close this window and return to the app.
+                    </div>
+                `;
+            }).catch(err => {
+                actionContainer.innerHTML = `<h2>Verification Failed</h2><p class="error-message">This verification link is invalid or has expired. Please try to log in again to receive a new link.</p>`;
+            });
+        }
+    </script>
+
+</body>
+</html>
