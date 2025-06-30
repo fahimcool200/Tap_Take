@@ -13,6 +13,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
+        :root {
+            --primary-color: #1e90ff;
+            --success-color: #2ecc71;
+            --error-color: #e74c3c;
+            --bg-gradient: linear-gradient(120deg, #f6d365 0%, #fda085 100%);
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
             display: flex;
@@ -20,115 +27,204 @@
             justify-content: center;
             min-height: 100vh;
             margin: 0;
-            background: linear-gradient(120deg, #f6d365 0%, #fda085 100%);
+            background: var(--bg-gradient);
             padding: 20px;
             box-sizing: border-box;
         }
+
         .container {
             background: #fff;
-            padding: 30px 25px;
-            border-radius: 12px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            padding: 40px 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
             text-align: center;
+            border-top: 5px solid var(--primary-color);
+            transform: scale(0.95);
+            opacity: 0;
+            animation: fadeInScale 0.5s forwards ease-out;
         }
-        h2 {
+
+        @keyframes fadeInScale {
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .app-header {
             margin-bottom: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .app-logo {
+            font-size: 48px;
+            color: var(--primary-color);
+            line-height: 1;
+        }
+
+        .app-name {
+            font-size: 1.8em;
             color: #2c3e50;
+            font-weight: 700;
+        }
+
+        h2 {
+            margin-bottom: 10px;
+            color: #34495e;
             font-weight: 600;
         }
+
+        p.subtitle {
+            font-size: 0.95em; 
+            color: #7f8c8d; 
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
         .form-group {
-            margin-bottom: 18px;
+            margin-bottom: 20px;
             text-align: left;
             position: relative;
         }
+        
         label {
             display: block;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             font-weight: 500;
             color: #555;
         }
-        input[type="password"], input[type="email"] {
+        
+        input[type="password"] {
             width: 100%;
-            padding: 12px 14px;
+            padding: 14px 16px;
             border: 1px solid #dce4ec;
             border-radius: 8px;
             font-size: 1em;
             box-sizing: border-box;
+            transition: border-color 0.3s, box-shadow 0.3s;
         }
+
+        input[type="password"]:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(30, 144, 255, 0.2);
+            outline: none;
+        }
+
         .password-toggle-icon {
             position: absolute;
-            top: calc(50% + 10px);
-            right: 12px;
+            top: calc(50% + 12px);
+            right: 15px;
             transform: translateY(-50%);
             cursor: pointer;
             color: #999;
         }
+
         button {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             border: none;
             border-radius: 8px;
-            background-color: #1e90ff;
+            background-color: var(--primary-color);
             color: white;
-            font-size: 1.05em;
-            font-weight: 500;
+            font-size: 1.1em;
+            font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.25s ease;
+            transition: background-color 0.25s, transform 0.2s;
             margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(30, 144, 255, 0.2);
         }
+
         button:hover {
             background-color: #1c86ee;
+            transform: translateY(-2px);
         }
+        
+        button:active {
+            transform: translateY(0);
+        }
+
         .message-area {
             min-height: 40px;
-            margin-top: 15px;
+            margin-top: 20px;
             font-weight: 500;
             font-size: 0.95em;
             padding: 12px;
-            border-radius: 6px;
+            border-radius: 8px;
             display: none; /* Hidden by default */
+            line-height: 1.4;
         }
-        .success-message {
-            color: #1e8449;
-            background-color: #d4efdf;
-            border: 1px solid #a9dfbf;
-            display: block;
-        }
-        .error-message {
-            color: #e74c3c;
-            background-color: #fadbd8;
-            border: 1px solid #f1c4c0;
-            display: block;
-        }
-        .info-message {
-             color: #2980b9;
-             background-color: #ebf5fb;
-             border: 1px solid #aed6f1;
-             display: block;
-        }
+        .success-message { color: #27ae60; background-color: #eafaf1; border: 1px solid #a9dfbf; display: block; }
+        .error-message { color: var(--error-color); background-color: #fbebec; border: 1px solid #f1c4c0; display: block; }
+        .info-message { color: #2980b9; background-color: #ebf5fb; border: 1px solid #aed6f1; display: block; }
+
         .login-link {
-            margin-top: 20px;
+            margin-top: 25px;
             font-size: 0.95em;
+            color: #7f8c8d;
         }
-        .login-link a {
-            color: #1e90ff;
-            text-decoration: none;
-            font-weight: 500;
+        
+        /* Success Animation */
+        .success-animation-container {
+            padding: 30px 0;
+        }
+        .checkmark-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: inline-block;
+            background: var(--success-color);
+            position: relative;
+            animation: scaleUp 0.4s ease-in-out;
+        }
+        .checkmark-circle:after {
+            content: '';
+            box-sizing: border-box;
+            position: absolute;
+            left: 32px;
+            top: 48px;
+            height: 25px;
+            width: 50px;
+            transform: rotate(-45deg) scaleX(-1) translateY(-50%);
+            border: 5px solid white;
+            border-top: 0;
+            border-right: 0;
+            animation: drawCheck 0.4s 0.4s ease-in-out forwards;
+            opacity: 0;
+        }
+
+        @keyframes scaleUp {
+            from { transform: scale(0); }
+            to { transform: scale(1); }
+        }
+
+        @keyframes drawCheck {
+            to { opacity: 1; }
         }
     </style>
 </head>
 <body>
 
     <div class="container" id="action-container">
+        <!-- Header -->
+        <div class="app-header">
+            <div class="app-logo"><i class="fas fa-fingerprint"></i></div>
+            <h1 class="app-name">TapTak</h1>
+        </div>
+        
         <!-- Content will be injected by JavaScript -->
-        <h2>Loading...</h2>
-        <p>Please wait while we process your request.</p>
+        <div id="content-area">
+            <h2>Loading...</h2>
+            <p class="subtitle">Please wait while we process your request.</p>
+        </div>
     </div>
 
     <script>
-        // --- Firebase Configuration (আপনার আগের কনফিগারেশনটি এখানে দিন) ---
+        // --- Firebase Configuration ---
         const firebaseConfig = {
             apiKey: "AIzaSyB48gD1mAzw-4J_1OvO-rdbzlAUDtUQZpQ",
             authDomain: "income-app-ads.firebaseapp.com",
@@ -147,21 +243,20 @@
             auth = firebase.auth();
         } catch (e) {
             console.error("Firebase init error:", e);
-            document.getElementById('action-container').innerHTML = `<h2>Initialization Error</h2><p class="error-message">Could not connect to services. Please try again later.</p>`;
+            document.getElementById('content-area').innerHTML = `<h2>Initialization Error</h2><p class="error-message">Could not connect to services. Please try again later.</p>`;
         }
 
-        const actionContainer = document.getElementById('action-container');
+        const contentArea = document.getElementById('content-area');
 
         // Function to show messages
         function showMessage(msg, type) {
-            const messageDiv = actionContainer.querySelector('#message-area');
+            const messageDiv = contentArea.querySelector('#message-area');
             if(messageDiv) {
                 messageDiv.innerHTML = msg;
                 messageDiv.className = `message-area ${type}-message`;
             }
         }
         
-        // Function to toggle password visibility
         function togglePasswordVisibility(id, icon) {
             const input = document.getElementById(id);
             if(input.type === 'password') {
@@ -175,7 +270,7 @@
             }
         }
 
-        // --- Main Logic to Handle Actions ---
+        // --- Main Logic ---
         document.addEventListener('DOMContentLoaded', () => {
             if (!auth) return;
 
@@ -184,7 +279,7 @@
             const oobCode = urlParams.get('oobCode');
 
             if (!mode || !oobCode) {
-                actionContainer.innerHTML = `<h2>Invalid Link</h2><p class="error-message">This link is invalid or has expired. Please try again.</p>`;
+                contentArea.innerHTML = `<h2>Invalid Link</h2><p class="subtitle error-message">This link is invalid or has expired. Please try again.</p>`;
                 return;
             }
 
@@ -196,18 +291,18 @@
                     handleEmailVerification(oobCode);
                     break;
                 default:
-                    actionContainer.innerHTML = `<h2>Unknown Action</h2><p class="error-message">The requested action is not recognized.</p>`;
+                    contentArea.innerHTML = `<h2>Unknown Action</h2><p class="subtitle error-message">The requested action is not recognized.</p>`;
             }
         });
         
         function handlePasswordReset(code) {
             auth.verifyPasswordResetCode(code).then(email => {
-                actionContainer.innerHTML = `
+                contentArea.innerHTML = `
                     <h2>Reset Your Password</h2>
-                    <p style="font-size:0.9em; color:#666; margin-bottom: 20px;">Enter a new password for your account: <strong>${email}</strong></p>
+                    <p class="subtitle">Enter a new password for <strong>${email}</strong></p>
                     <div class="form-group">
                         <label for="new-password">New Password</label>
-                        <input type="password" id="new-password" required>
+                        <input type="password" id="new-password" required placeholder="••••••••">
                         <i class="fas fa-eye password-toggle-icon" onclick="togglePasswordVisibility('new-password', this)"></i>
                     </div>
                     <button id="confirm-reset-btn">Save New Password</button>
@@ -223,9 +318,12 @@
 
                     showMessage('Saving new password...', 'info');
                     auth.confirmPasswordReset(code, newPassword).then(() => {
-                        actionContainer.innerHTML = `
+                        contentArea.innerHTML = `
+                            <div class="success-animation-container">
+                                <div class="checkmark-circle"></div>
+                            </div>
                             <h2>Success!</h2>
-                            <p class="success-message">Your password has been changed successfully.</p>
+                            <p class="subtitle success-message">Your password has been changed successfully.</p>
                             <div class="login-link">
                                 You can now return to the app and log in with your new password.
                             </div>
@@ -236,22 +334,25 @@
                 });
 
             }).catch(err => {
-                actionContainer.innerHTML = `<h2>Link Expired</h2><p class="error-message">This password reset link is invalid or has expired. Please request a new one from the app.</p>`;
+                contentArea.innerHTML = `<h2>Link Expired</h2><p class="subtitle error-message">This password reset link is invalid or has expired. Please request a new one from the app.</p>`;
             });
         }
 
         function handleEmailVerification(code) {
-            actionContainer.innerHTML = `<h2>Verifying Your Email...</h2><p class="info-message">Please wait a moment.</p>`;
+            contentArea.innerHTML = `<h2>Verifying Your Email...</h2><p class="info-message">Please wait a moment.</p>`;
             auth.applyActionCode(code).then(() => {
-                actionContainer.innerHTML = `
+                contentArea.innerHTML = `
+                    <div class="success-animation-container">
+                        <div class="checkmark-circle"></div>
+                    </div>
                     <h2>Email Verified!</h2>
-                    <p class="success-message">Thank you! Your email address has been successfully verified.</p>
+                    <p class="subtitle success-message">Thank you! Your email address has been successfully verified.</p>
                     <div class="login-link">
                        You can now close this window and return to the app.
                     </div>
                 `;
             }).catch(err => {
-                actionContainer.innerHTML = `<h2>Verification Failed</h2><p class="error-message">This verification link is invalid or has expired. Please try to log in again to receive a new link.</p>`;
+                contentArea.innerHTML = `<h2>Verification Failed</h2><p class="subtitle error-message">This verification link is invalid or has expired. Please try to log in again to receive a new link.</p>`;
             });
         }
     </script>
