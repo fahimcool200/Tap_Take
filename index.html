@@ -17,7 +17,7 @@
             --primary-color: #1e90ff;
             --success-color: #2ecc71;
             --error-color: #e74c3c;
-            --bg-gradient: linear-gradient(120deg, #f6d365 0%, #fda085 100%);
+            --bg-gradient: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
         }
 
         body {
@@ -77,6 +77,7 @@
             margin-bottom: 10px;
             color: #34495e;
             font-weight: 600;
+            font-size: 1.6em;
         }
 
         p.subtitle {
@@ -99,7 +100,13 @@
             color: #555;
         }
         
-        input[type="password"] {
+        .password-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        input[type="password"], input[type="text"] {
             width: 100%;
             padding: 14px 16px;
             border: 1px solid #dce4ec;
@@ -109,7 +116,7 @@
             transition: border-color 0.3s, box-shadow 0.3s;
         }
 
-        input[type="password"]:focus {
+        input:focus {
             border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(30, 144, 255, 0.2);
             outline: none;
@@ -117,14 +124,14 @@
 
         .password-toggle-icon {
             position: absolute;
-            top: calc(50% + 12px);
             right: 15px;
-            transform: translateY(-50%);
             cursor: pointer;
             color: #999;
+            width: 20px;
+            text-align: center;
         }
 
-        button {
+        button.primary-btn {
             width: 100%;
             padding: 14px;
             border: none;
@@ -137,14 +144,17 @@
             transition: background-color 0.25s, transform 0.2s;
             margin-top: 10px;
             box-shadow: 0 4px 15px rgba(30, 144, 255, 0.2);
+            text-decoration: none; /* For <a> tag */
+            display: inline-block; /* For <a> tag */
+            box-sizing: border-box; /* For <a> tag */
         }
 
-        button:hover {
+        button.primary-btn:hover, a.primary-btn:hover {
             background-color: #1c86ee;
             transform: translateY(-2px);
         }
         
-        button:active {
+        button.primary-btn:active, a.primary-btn:active {
             transform: translateY(0);
         }
 
@@ -161,17 +171,17 @@
         .success-message { color: #27ae60; background-color: #eafaf1; border: 1px solid #a9dfbf; display: block; }
         .error-message { color: var(--error-color); background-color: #fbebec; border: 1px solid #f1c4c0; display: block; }
         .info-message { color: #2980b9; background-color: #ebf5fb; border: 1px solid #aed6f1; display: block; }
-
-        .login-link {
-            margin-top: 25px;
-            font-size: 0.95em;
-            color: #7f8c8d;
-        }
         
         /* Success Animation */
         .success-animation-container {
-            padding: 30px 0;
+            padding: 20px 0;
+            transform: scale(0);
+            animation: scaleUp 0.4s 0.2s forwards ease-out;
         }
+        @keyframes scaleUp {
+            to { transform: scale(1); }
+        }
+
         .checkmark-circle {
             width: 100px;
             height: 100px;
@@ -179,31 +189,37 @@
             display: inline-block;
             background: var(--success-color);
             position: relative;
-            animation: scaleUp 0.4s ease-in-out;
         }
-        .checkmark-circle:after {
-            content: '';
-            box-sizing: border-box;
+        .checkmark-stem {
             position: absolute;
-            left: 32px;
-            top: 48px;
+            width: 5px;
+            height: 50px;
+            background-color: #fff;
+            left: 48px;
+            top: 25px;
+            transform: rotate(-45deg);
+            animation: drawStem 0.3s 0.5s ease-out forwards;
+            transform-origin: top left;
+        }
+        .checkmark-kick {
+            position: absolute;
+            width: 5px;
             height: 25px;
-            width: 50px;
-            transform: rotate(-45deg) scaleX(-1) translateY(-50%);
-            border: 5px solid white;
-            border-top: 0;
-            border-right: 0;
-            animation: drawCheck 0.4s 0.4s ease-in-out forwards;
-            opacity: 0;
+            background-color: #fff;
+            left: 28px;
+            top: 60px;
+            transform: rotate(45deg);
+            animation: drawKick 0.3s 0.8s ease-out forwards;
+            transform-origin: top left;
         }
 
-        @keyframes scaleUp {
-            from { transform: scale(0); }
-            to { transform: scale(1); }
+        @keyframes drawStem {
+            from { height: 0; }
+            to { height: 50px; }
         }
-
-        @keyframes drawCheck {
-            to { opacity: 1; }
+        @keyframes drawKick {
+            from { height: 0; }
+            to { height: 25px; }
         }
     </style>
 </head>
@@ -236,7 +252,6 @@
             measurementId: "G-FNS2Z4H8QV"
         };
         
-        // --- Initialize Firebase ---
         let auth;
         try {
             firebase.initializeApp(firebaseConfig);
@@ -248,7 +263,6 @@
 
         const contentArea = document.getElementById('content-area');
 
-        // Function to show messages
         function showMessage(msg, type) {
             const messageDiv = contentArea.querySelector('#message-area');
             if(messageDiv) {
@@ -257,8 +271,9 @@
             }
         }
         
-        function togglePasswordVisibility(id, icon) {
+        function togglePasswordVisibility(id, iconEl) {
             const input = document.getElementById(id);
+            const icon = iconEl.querySelector('i');
             if(input.type === 'password') {
                 input.type = 'text';
                 icon.classList.remove('fa-eye');
@@ -270,7 +285,6 @@
             }
         }
 
-        // --- Main Logic ---
         document.addEventListener('DOMContentLoaded', () => {
             if (!auth) return;
 
@@ -302,10 +316,12 @@
                     <p class="subtitle">Enter a new password for <strong>${email}</strong></p>
                     <div class="form-group">
                         <label for="new-password">New Password</label>
-                        <input type="password" id="new-password" required placeholder="••••••••">
-                        <i class="fas fa-eye password-toggle-icon" onclick="togglePasswordVisibility('new-password', this)"></i>
+                        <div class="password-wrapper">
+                           <input type="password" id="new-password" required placeholder="••••••••">
+                           <span class="password-toggle-icon" onclick="togglePasswordVisibility('new-password', this)"><i class="fas fa-eye"></i></span>
+                        </div>
                     </div>
-                    <button id="confirm-reset-btn">Save New Password</button>
+                    <button class="primary-btn" id="confirm-reset-btn">Save New Password</button>
                     <div id="message-area" class="message-area"></div>
                 `;
 
@@ -320,13 +336,14 @@
                     auth.confirmPasswordReset(code, newPassword).then(() => {
                         contentArea.innerHTML = `
                             <div class="success-animation-container">
-                                <div class="checkmark-circle"></div>
+                                <div class="checkmark-circle">
+                                    <div class="checkmark-stem"></div>
+                                    <div class="checkmark-kick"></div>
+                                </div>
                             </div>
                             <h2>Success!</h2>
                             <p class="subtitle success-message">Your password has been changed successfully.</p>
-                            <div class="login-link">
-                                You can now return to the app and log in with your new password.
-                            </div>
+                            <a href="./index.html" class="primary-btn">Back to App</a>
                         `;
                     }).catch(err => {
                         showMessage(`Error: ${err.message}`, 'error');
@@ -343,13 +360,14 @@
             auth.applyActionCode(code).then(() => {
                 contentArea.innerHTML = `
                     <div class="success-animation-container">
-                        <div class="checkmark-circle"></div>
+                        <div class="checkmark-circle">
+                            <div class="checkmark-stem"></div>
+                            <div class="checkmark-kick"></div>
+                        </div>
                     </div>
                     <h2>Email Verified!</h2>
                     <p class="subtitle success-message">Thank you! Your email address has been successfully verified.</p>
-                    <div class="login-link">
-                       You can now close this window and return to the app.
-                    </div>
+                    <a href="./index.html" class="primary-btn">Continue to Login</a>
                 `;
             }).catch(err => {
                 contentArea.innerHTML = `<h2>Verification Failed</h2><p class="subtitle error-message">This verification link is invalid or has expired. Please try to log in again to receive a new link.</p>`;
