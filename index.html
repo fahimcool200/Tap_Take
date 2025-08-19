@@ -54,7 +54,6 @@
                     <div class="form-grid">
                         <div class="form-group"><label for="earn-page-title">"Earn" Page Title</label><input type="text" id="earn-page-title"></div>
                         <div class="form-group"><label for="completed-label">"Completed" Text</label><input type="text" id="completed-label"></div>
-                        <!-- ভবিষ্যতে আরও টেক্সট যোগ করার অপশন -->
                     </div>
                 </div>
             </div>
@@ -69,11 +68,35 @@
     <div id="details-modal" class="modal-overlay"><div class="modal-content"><button class="modal-close" onclick="closeModal()">&times;</button><h3>Withdrawal Details</h3><div id="modal-body" class="modal-details"></div></div></div>
 
     <script>
-        const ADMIN_PASSWORD="40707@#$";
-        
-        function authenticate(){/*...*/}
+        const ADMIN_PASSWORD = "40707@#$";
 
-        function initializeApp(){
+        function authenticate() {
+            const loginButton = document.getElementById('login-button');
+            const passwordInput = document.getElementById('admin-password');
+            const loginError = document.getElementById('login-error');
+
+            loginButton.addEventListener('click', () => {
+                if (passwordInput.value === ADMIN_PASSWORD) {
+                    const overlay = document.getElementById('login-overlay');
+                    overlay.style.opacity = '0';
+                    setTimeout(() => {
+                        overlay.style.display = 'none';
+                    }, 500);
+                    document.getElementById('admin-content').style.display = 'block';
+                    initializeApp();
+                } else {
+                    loginError.textContent = 'Incorrect password!';
+                    passwordInput.value = '';
+                }
+            });
+            passwordInput.addEventListener('keyup', (event) => {
+                if (event.key === 'Enter') {
+                    loginButton.click();
+                }
+            });
+        }
+
+        function initializeApp() {
             const firebaseConfig = {apiKey:"AIzaSyBNBAupa-P-NA5WuttGiGFiL0TPUmcU0NM",authDomain:"chats-ab4af.firebaseapp.com",databaseURL:"https://chats-ab4af-default-rtdb.firebaseio.com",projectId:"chats-ab4af",storageBucket:"chats-ab4af.appspot.com",messagingSenderId:"317093436715",appId:"1:317093436715:web:5cf4391b87f51eade4b96e"};
             firebase.initializeApp(firebaseConfig);
             const db = firebase.database();
@@ -123,14 +146,93 @@
                 });
             });
 
-            const withdrawalsRef=db.ref("withdrawals");
-            withdrawalsRef.on("value",e=>{/* আগের মতোই, কোনো পরিবর্তন নেই */});
+            // Load and display withdrawals
+            const withdrawalsRef = db.ref('withdrawals');
+            withdrawalsRef.on('value', (snapshot) => {
+                const withdrawals = snapshot.val();
+                const pendingBody = document.querySelector('#pending-table tbody');
+                const processedBody = document.querySelector('#processed-table tbody');
+                pendingBody.innerHTML = '';
+                processedBody.innerHTML = '';
+
+                if (!withdrawals) {
+                    pendingBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No pending withdrawals.</td></tr>';
+                    return;
+                }
+                
+                const sortedWithdrawals = Object.values(withdrawals).sort((a,b) => b.timestamp - a.timestamp);
+                let hasPending = false;
+
+                for (const item of sortedWithdrawals) {
+                    const date = new Date(item.timestamp).toLocaleString();
+                    if (item.status === 'Pending') {
+                        hasPending = true;
+                        const row = `<tr>
+                            <td>${item.userId}</td><td>${item.amount}</td><td>${date}</td>
+                            <td>
+                                <button class="btn btn-details" onclick='showDetails(${JSON.stringify(item)})'>Details</button>
+                                <button class="btn btn-approve" onclick="approveWithdrawal('${item.id}', '${item.userId}')">Approve</button>
+                                <button class="btn btn-reject" onclick="rejectWithdrawal('${item.id}', '${item.userId}', ${item.amount})">Reject</button>
+                            </td>
+                        </tr>`;
+                        pendingBody.innerHTML += row;
+                    } else {
+                         const row = `<tr>
+                            <td>${item.userId}</td><td>${item.amount}</td><td>${date}</td>
+                            <td><span class="status status-${item.status.toLowerCase()}">${item.status}</span></td>
+                            <td><button class="btn btn-details" onclick='showDetails(${JSON.stringify(item)})'>Details</button></td>
+                        </tr>`;
+                        processedBody.innerHTML += row;
+                    }
+                }
+                if (!hasPending) {
+                    pendingBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No pending withdrawals.</td></tr>';
+                }
+            });
         }
         
-        function showDetails(item){/* আগের মতোই */}
-        function closeModal(){/* আগের মতোই */}
-        async function approveWithdrawal(withdrawalId, userId){/* আগের মতোই */}
-        async function rejectWithdrawal(withdrawalId, userId, amount){/* আগের মতোই */}
+        function showDetails(item) {
+            const modalBody = document.getElementById('modal-body');
+            modalBody.innerHTML = `
+                <p><strong>User ID:</strong> ${item.userId}</p>
+                <p><strong>Username:</strong> @${item.username}</p>
+                <p><strong>Amount:</strong> ${item.amount} Coins</p>
+                <p><strong>Address:</strong> ${item.address}</p>
+                <p><strong>Date:</strong> ${new Date(item.timestamp).toLocaleString()}</p>
+                <p><strong>Status:</strong> ${item.status}</p>
+                ${(item.status === 'Rejected' && item.rejectionReason) ? `<p><strong>Reason:</strong> ${item.rejectionReason}</p>` : ''}
+            `;
+            document.getElementById('details-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('details-modal').style.display = 'none';
+        }
+
+        async function approveWithdrawal(withdrawalId, userId) {
+            const updates = {};
+            updates[`/withdrawals/${withdrawalId}/status`] = 'Approved';
+            updates[`/users/${userId}/withdrawalHistory/${withdrawalId}/status`] = 'Approved';
+            await firebase.database().ref().update(updates);
+            alert('Withdrawal Approved!');
+        }
+
+        async function rejectWithdrawal(withdrawalId, userId, amount) {
+            const reason = prompt("Please enter the reason for rejection:");
+            if (reason === null) return;
+
+            const userCoinsRef = firebase.database().ref(`/users/${userId}/coins`);
+            await userCoinsRef.transaction((currentCoins) => (currentCoins || 0) + amount);
+
+            const updates = {};
+            updates[`/withdrawals/${withdrawalId}/status`] = 'Rejected';
+            updates[`/withdrawals/${withdrawalId}/rejectionReason`] = reason;
+            updates[`/users/${userId}/withdrawalHistory/${withdrawalId}/status`] = 'Rejected';
+            updates[`/users/${userId}/withdrawalHistory/${withdrawalId}/rejectionReason`] = reason;
+            
+            await firebase.database().ref().update(updates);
+            alert('Withdrawal Rejected and coins refunded!');
+        }
         
         authenticate();
     </script>
