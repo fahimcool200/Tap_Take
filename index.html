@@ -2,86 +2,138 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>CryptoCash Admin Panel</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>CryptoCash Bot</title>
+    
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
     <style>
-        body{font-family:'Poppins',sans-serif;margin:0;background-color:#f4f7fa;color:#333;line-height:1.6}
-        #login-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);z-index:100;display:flex;justify-content:center;align-items:center;transition:opacity .5s ease}
-        .login-box{background:white;padding:40px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.1);text-align:center;width:90%;max-width:350px; animation: fadeInUp 0.7s ease-out;}
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        .login-box h2{margin-top:0;color:#333;font-weight:600}
-        .login-box p{color:#777;margin-bottom:25px}
-        .password-wrapper{position:relative;margin-bottom:15px;}
-        .login-box input{width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box;font-family:'Poppins'}
-        #togglePassword{position:absolute;top:50%;right:15px;transform:translateY(-50%);cursor:pointer;color:#aaa}
-        .login-box button{width:100%;padding:12px;border:none;border-radius:8px;background:#4A00E0;color:white;font-size:1em;font-weight:600;cursor:pointer;transition:background .2s}
-        .login-box button:hover{background:#5e29e0}
-        #login-error{color:red;font-size:0.9em;margin-top:10px;height:1em}
-        header{background:linear-gradient(90deg,#4A00E0,#8A2BE2);color:white;padding:20px;text-align:center;box-shadow:0 4px 6px rgba(0,0,0,0.1)}header h1{margin:0;font-weight:600}.container{max-width:1200px;margin:30px auto;padding:0 20px}.card{background:white;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.07);margin-bottom:30px;overflow:hidden}.card-header{padding:20px;border-bottom:1px solid #eef2f7;display:flex;justify-content:space-between;align-items:center}.card-header h2{margin:0;font-size:1.25em;color:#4A00E0}.card-content{padding:20px; overflow-x: auto;}
-        table{width:100%;border-collapse:collapse;min-width:700px}th,td{padding:15px;text-align:left;border-bottom:1px solid #eef2f7}th{font-weight:600;color:#555;font-size:0.9em;text-transform:uppercase}tr:last-child td{border-bottom:none}tr:hover{background-color:#f9fafb}.btn{padding:8px 16px;border:none;border-radius:6px;cursor:pointer;color:white;font-weight:500;transition:all .2s ease;font-family:'Poppins'; margin: 2px;}.btn:hover{transform:translateY(-2px);box-shadow:0 2px 4px rgba(0,0,0,0.1)}.btn-details{background-color:#5a67d8}.btn-approve{background-color:#10b981}.btn-reject{background-color:#ef4444;}.status{padding:5px 12px;border-radius:99px;font-size:0.85em;font-weight:600;text-align:center}.status-approved{background-color:#d1fae5;color:#065f46}.status-rejected{background-color:#fee2e2;color:#991b1b}.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:25px}.form-group label{display:block;margin-bottom:8px;font-weight:600;color:#555}.form-group input{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:6px;font-size:1em;box-sizing:border-box;transition:border-color .2s,box-shadow .2s}.form-group input:focus{border-color:#4A00E0;box-shadow:0 0 0 3px rgba(74,0,224,0.1);outline:none}#save-config{background:#4A00E0;margin-top:20px;font-size:1.1em;width:100%;padding:14px}#status-message{text-align:center;font-weight:600;margin-top:15px;transition:opacity .3s}#admin-content{display:none}
-        .modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:1000;display:none;justify-content:center;align-items:center}.modal-content{background:white;padding:30px;border-radius:12px;width:90%;max-width:500px;box-shadow:0 5px 25px rgba(0,0,0,0.2);position:relative;animation:slideIn 0.4s ease-out}.modal-close{position:absolute;top:15px;right:15px;background:none;border:none;font-size:1.5em;cursor:pointer;color:#888}.modal-content h3{margin-top:0;color:#4A00E0}.modal-details p{margin:10px 0;border-bottom:1px solid #eee;padding-bottom:10px;word-break:break-all}.modal-details p:last-child{border-bottom:none}.modal-details strong{color:#555;min-width:100px;display:inline-block}
-        @keyframes slideIn { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .ban-section{display:flex;gap:10px;align-items:center;}
-        .ban-section input{flex-grow:1;}
-        .btn-ban{background-color:#d97706;}
-        .btn-unban{background-color:#059669;}
+        :root{--bg-light:#f4f7f6;--card-bg:rgba(255,255,255,0.9);--card-border:rgba(0,0,0,0.08);--text-color:#1a202c;--text-secondary:#718096;--accent-gradient:linear-gradient(90deg,#4A00E0,#8A2BE2);--accent-glow:0 10px 25px rgba(74,0,224,0.2);--coin-color:#f59e0b}
+        body{font-family:'Poppins',sans-serif;background-color:var(--bg-light);color:var(--text-color);margin:0;padding:85px 15px 120px 15px;-webkit-tap-highlight-color:transparent;min-height:100vh;box-sizing:border-box;}
+        #background-animation{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;overflow:hidden}
+        .money{position:absolute;bottom:-100px;font-size:1.5rem;color:rgba(34,139,34,0.6);animation:fly-up linear infinite;opacity:0}
+        @keyframes fly-up{0%{transform:translateY(0) rotate(0deg);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateY(-120vh) rotate(720deg);opacity:0}}
+        #loader-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background-image:linear-gradient(45deg,#f3e8ff,#e7f3ff);z-index:9999;display:flex;justify-content:center;align-items:center;flex-direction:column;transition:opacity .5s ease}
+        .coin-loader{width:60px;height:60px;perspective:800px;margin-bottom:15px}.coin{width:100%;height:100%;position:relative;transform-style:preserve-3d;animation:flip 2s infinite linear}.front,.back{position:absolute;width:100%;height:100%;border-radius:50%;backface-visibility:hidden;background-color:#f59e0b;display:flex;align-items:center;justify-content:center;font-size:1.8em;color:white;font-weight:bold;box-shadow:inset 0 0 10px rgba(0,0,0,0.2)}.back{transform:rotateY(180deg);background-color:#f9b139}@keyframes flip{from{transform:rotateY(0)}to{transform:rotateY(360deg)}}#loader-text{width:160px;text-align:center;}#loader-text p{font-weight:600;color:#4A00E0;font-size:1.1em;margin:0;}.loader-progress-bar-container{width:100%;height:8px;background-color:rgba(74,0,224,0.1);border-radius:4px;margin-top:10px;overflow:hidden}#loader-progress-bar{width:0%;height:100%;background:var(--accent-gradient);border-radius:4px;transition:width 0.2s linear}header,nav{position:fixed;left:0;width:100%;background:rgba(255,255,255,0.7);backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);z-index:1000;box-sizing:border-box}header{top:0;padding:15px 20px;border-bottom:1px solid var(--card-border);display:flex;justify-content:space-between;align-items:center}
+        .header-left{font-weight:700;font-size:1.2em;color:#4A00E0}
+        .header-right{display:flex;align-items:center;gap:10px;font-size:0.9em;color:var(--text-secondary)}
+        #header-profile-pic{width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid #fff;box-shadow:0 0 5px rgba(0,0,0,0.1)}
+        nav{bottom:0;display:flex;justify-content:space-around;border-top:1px solid var(--card-border);padding:10px 0}.nav-button{flex-grow:1;text-align:center;color:var(--text-secondary);background:none;border:none;cursor:pointer;transition:all .3s}.nav-button i{font-size:1.5em}.nav-button p{margin:5px 0 0 0;font-size:.75em;font-weight:600}.nav-button.active{color:#4A00E0;transform:translateY(-3px)}.page{display:none;animation:fadeIn .5s ease-out}.page.active{display:block}@keyframes fadeIn{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}.card{background:var(--card-bg);border-radius:20px;padding:25px;margin-bottom:20px;border:1px solid var(--card-border);box-shadow:0 4px 15px rgba(0,0,0,0.05)}.action-button{width:100%;padding:16px;background:var(--accent-gradient);color:white;border:none;border-radius:15px;font-size:1.1em;font-weight:700;cursor:pointer;transition:all .3s ease;box-shadow:var(--accent-glow)}.action-button:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(74,0,224,0.25)}.action-button:active{transform:scale(.98)}.action-button:disabled{background:#b0bec5;cursor:not-allowed;transform:none;box-shadow:none}.page-title{font-size:1.8em;font-weight:800;text-align:center;margin-bottom:20px}.page-title i{margin-right:10px;color:#8A2BE2}.balance-amount{font-size:2.8em;font-weight:800;margin:10px 0;display:flex;align-items:center;justify-content:center;gap:10px}.balance-amount .fa-coins{color:var(--coin-color)}.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;text-align:center;margin-top:20px}.stat-item{background:#f9fafb;padding:15px;border-radius:12px;border:1px solid var(--card-border)}.stat-item h3{margin:0 0 5px 0;font-size:1.4em}.stat-item p{margin:0;font-size:.9em;color:var(--text-secondary)}.coming-soon{text-align:center;color:var(--text-secondary);padding:20px;font-weight:600;font-size:1.1em}
+        .task-summary-title{font-size:1.3em;font-weight:700;color:var(--text-secondary);text-align:center;margin-bottom:20px;}
+        .task-summary-grid{display:flex;justify-content:space-around;text-align:center;gap:10px;margin-bottom:30px;}
+        .task-summary-item p{margin:0 0 5px 0;font-size:0.95em;color:var(--text-secondary);font-weight:500;}
+        .task-summary-item h3{margin:0;font-size:2em;font-weight:800;}
+        .task-summary-item .total{color:#4A00E0;}
+        .task-summary-item .completed{color:#10b981;}
+        .task-summary-item .remaining{color:#ef4444;}
+        #countdown-container{text-align:center;padding:20px 0}#countdown-container p{margin:0 0 10px 0;color:var(--text-secondary);font-weight:600}#countdown-timer{font-size:2em;font-weight:800;color:#4A00E0}.payment-methods{display:flex;justify-content:center;margin-bottom:25px}.method{padding:15px 5px;background:#f9fafb;border:2px solid var(--card-border);border-radius:12px;text-align:center;cursor:pointer;transition:all .3s;width:90px}.method img{width:35px;height:35px;margin-bottom:5px;border-radius:50%}.method p{margin:0;font-size:.8em}.method.active{border-color:#8A2BE2;background:#f3e8ff}.form-group input{width:100%;padding:14px;background-color:#f1f5f9;border:1px solid var(--card-border);border-radius:12px;color:var(--text-color);font-size:1em;box-sizing:border-box;margin-bottom:15px}.history-item{display:flex;flex-direction:column;align-items:flex-start;padding:15px 0;border-bottom:1px solid var(--card-border)}.history-item:last-child{border-bottom:none}.history-details{display:flex;justify-content:space-between;align-items:center;width:100%}.history-info .amount{font-weight:600;font-size:1.1em;display:flex;align-items:center;gap:5px}.history-info .date{font-size:.8em;color:var(--text-secondary)}.history-status{font-weight:600;font-size:.9em;padding:5px 10px;border-radius:20px}.history-status.pending{background-color:#fffbeb;color:#b45309}.history-status.approved{background-color:#f0fdf4;color:#15803d}.history-status.rejected{background-color:#fef2f2;color:#b91c1c}.rejection-reason{background-color:#f8f9fa;border-left:3px solid #ef4444;padding:10px;margin-top:10px;width:calc(100% - 20px);font-size:0.85em;color:#555;border-radius:0 6px 6px 0}.no-history{text-align:center;color:var(--text-secondary);padding:20px}.referral-link-box{background:#e2e8f0;padding:15px;border-radius:12px;text-align:center;font-family:monospace;word-wrap:break-word;color:#475569;margin-bottom:20px}.hidden{display:none!important}.profile-pic{width:100px;height:100px;border-radius:50%;object-fit:cover;border:4px solid white;box-shadow:0 0 15px rgba(0,0,0,0.1);margin-bottom:15px}.profile-name{font-size:1.5em;font-weight:700;margin:0}.developer-button{margin-top:25px;background:none;border:2px solid #8A2BE2;color:#8A2BE2;font-weight:600;box-shadow:none}.developer-button:hover{background:#8A2BE2;color:white;box-shadow:var(--accent-glow)}.social-share-buttons{display:flex;justify-content:center;gap:15px;margin-top:15px}.share-btn{color:white;border:none;border-radius:50%;width:45px;height:45px;font-size:1.2em;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .2s}.share-btn:hover{transform:scale(1.1)}.share-btn.telegram{background:#2AABEE}.share-btn.twitter{background:#1DA1F2}.share-btn.facebook{background:#1877F2}
+        #ban-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;z-index:9998;display:none;justify-content:center;align-items:center;flex-direction:column;text-align:center;padding:20px;box-sizing:border-box}
+        #ban-overlay i{font-size:4em;color:#ef4444;margin-bottom:20px}
+        #ban-overlay h2{font-size:1.5em;margin-bottom:10px}
+        #ban-overlay p{color:var(--text-secondary)}
     </style>
 </head>
 <body>
-    <div id="login-overlay"><div class="login-box"><h2>Admin Login</h2><p>Enter your password to access the panel.</p><div class="password-wrapper"><input type="password" id="admin-password" placeholder="Password"><i class="fas fa-eye" id="togglePassword"></i></div><button id="login-button">Login</button><p id="login-error"></p></div></div>
-    
-    <div id="admin-content">
-        <header><h1>CryptoCash Admin Panel</h1></header>
-        <div class="container">
-            <div class="card"><div class="card-header"><h2>App Configuration</h2></div><div class="card-content"><div class="form-grid"><div class="form-group"><label for="bot-name">Bot Name</label><input type="text" id="bot-name"></div><div class="form-group"><label for="bot-username">Bot Username (for referral link)</label><input type="text" id="bot-username"></div><div class="form-group"><label for="reward-ad">Reward per Ad</label><input type="number" id="reward-ad"></div><div class="form-group"><label for="ad-limit">Daily Ad Limit</label><input type="number" id="ad-limit"></div><div class="form-group"><label for="min-withdraw">Min Withdrawal Coins</label><input type="number" id="min-withdraw"></div><div class="form-group"><label for="reward-referral">Reward per Referral</label><input type="number" id="reward-referral"></div><div class="form-group"><label for="max-referrals">Max Referrals Limit</label><input type="number" id="max-referrals"></div><div class="form-group"><label for="monetag-zone-id">Monetag Ad Zone ID</label><input type="text" id="monetag-zone-id"></div></div><button class="btn" id="save-config">Save App Settings</button></div></div>
-            <div class="card"><div class="card-header"><h2>User Management</h2></div><div class="card-content"><div class="form-group"><label for="user-id-ban">Enter User ID to Ban/Unban</label><div class="ban-section"><input type="number" id="user-id-ban" placeholder="e.g., 123456789"><button class="btn btn-ban" id="ban-user-btn">Ban User</button><button class="btn btn-unban" id="unban-user-btn">Unban User</button></div></div></div></div>
-            <p id="status-message"></p>
-            <div class="card"><div class="card-header"><h2>Pending Withdrawals</h2></div><div class="card-content"><table id="pending-table"><thead><tr><th>User ID</th><th>Amount</th><th>Date</th><th>Actions</th></tr></thead><tbody></tbody></table></div></div>
-            <div class="card"><div class="card-header"><h2>Processed Withdrawals</h2></div><div class="card-content"><table id="processed-table"><thead><tr><th>User ID</th><th>Amount</th><th>Date</th><th>Status</th><th>Details</th></tr></thead><tbody></tbody></table></div></div>
-        </div>
+    <div id="loader-overlay">
+        <div class="coin-loader"><div class="coin"><div class="front"><i class="fas fa-dollar-sign"></i></div><div class="back"><i class="fas fa-coins"></i></div></div></div>
+        <div id="loader-text"><p>Loading... <span id="loader-percentage">0%</span></p><div class="loader-progress-bar-container"><div id="loader-progress-bar"></div></div></div>
     </div>
-    <div id="details-modal" class="modal-overlay"><div class="modal-content"><button class="modal-close" onclick="closeModal()">&times;</button><h3>Withdrawal Details</h3><div id="modal-body" class="modal-details"></div></div></div>
+    <div id="ban-overlay"><i class="fas fa-user-slash"></i><h2>Account Banned</h2><p>You have been banned from using this app.</p></div>
+
+    <div id="background-animation"></div>
+    
+    <header>
+        <div class="header-left" id="bot-name-display"></div>
+        <div class="header-right">
+            <span id="user-id-display"></span>
+            <img id="header-profile-pic" src="https://t4.ftcdn.net/jpg/00/64/67/63/300_F_64676383_LdbmhiNM6Ypzb3FM4PPuFP9rHe7ri8Ju.jpg" alt="PFP">
+        </div>
+    </header>
+
+    <main>
+        <div id="home-page" class="page active"><div class="card" style="text-align:center;"><p style="color:var(--text-secondary); margin:0;">Your Balance</p><div class="balance-amount"><i class="fas fa-coins"></i><span id="balance-display">0</span></div></div><div class="card"><div class="stats-grid"><div class="stat-item"><h3 id="referrals-display">0</h3><p>Referrals</p></div><div class="stat-item"><h3 id="total-earning-display">0</h3><p>Total Earned</p></div></div></div><div class="card"><h3 style="text-align:center; margin-top:0;">Daily Tasks</h3><div class="coming-soon"><i class="fas fa-hammer"></i> Coming Soon</div></div></div>
+        <div id="earn-page" class="page"><div class="card"><div id="watch-ad-container"><h3 class="task-summary-title" id="today-tasks-title">Today's Ad Tasks</h3><div class="task-summary-grid"><div class="task-summary-item"><p>Total Tasks</p><h3 class="total" id="total-tasks-display">0</h3></div><div class="task-summary-item"><p>Completed</p><h3 class="completed" id="completed-tasks-display">0</h3></div><div class="task-summary-item"><p>Remaining</p><h3 class="remaining" id="remaining-tasks-display">0</h3></div></div><button class="action-button" id="watch-ad-button"></button></div><div id="countdown-container" class="hidden"><p>New ads will be available in:</p><div id="countdown-timer">23:59:59</div></div></div></div>
+        <div id="withdraw-page" class="page"><h2 class="page-title"><i class="fas fa-wallet"></i>Withdraw</h2><div class="card"><div class="stat-item" style="text-align:center; margin-bottom:20px;"><p style="font-size:1em;">Balance</p><span id="withdraw-balance-display"></span></div><div class="payment-methods" id="payment-methods-container"></div><div class="form-group"><input type="number" id="withdraw-amount" placeholder="Min: 1 Coin"><div id="live-conversion-display" style="text-align:center;color:var(--text-secondary);margin-top:10px;font-size:0.9em;height:20px;"></div><input type="text" id="wallet-address" placeholder="Enter Address / ID / Email"></div></div><button class="action-button" id="submit-withdrawal-button">Submit Request</button><div class="card" style="margin-top: 20px;"><h3 style="text-align:center; margin-top:0;">Withdrawal History</h3><div id="withdrawal-history-container"><p class="no-history">Loading history...</p></div></div></div>
+        <div id="referral-page" class="page"><h2 class="page-title"><i class="fas fa-users"></i>Referral</h2><div class="card"><p>Invite friends and earn more! You can invite a maximum of <b id="max-referrals-display">10</b> friends.</p><p>Your Link:</p><div class="referral-link-box" id="referral-link"></div><div class="social-share-buttons"><button class="share-btn telegram" id="share-telegram"><i class="fab fa-telegram-plane"></i></button><button class="share-btn twitter" id="share-twitter"><i class="fab fa-twitter"></i></button><button class="share-btn facebook" id="share-facebook"><i class="fab fa-facebook-f"></i></button></div></div></div>
+        <div id="profile-page" class="page"><h2 class="page-title"><i class="fas fa-user-circle"></i>Profile</h2><div class="card" style="text-align:center;"><img id="profile-pic" class="profile-pic"><h2 class="profile-name" id="profile-name"></h2><p id="profile-username" style="color:var(--text-secondary);margin:5px 0 20px 0;"></p><div class="stats-grid" style="grid-template-columns:1fr 1fr; margin-bottom: 15px;"><div class="stat-item"><h3>ID</h3><p id="profile-tg-id"></p></div><div class="stat-item"><h3>Joined</h3><p id="profile-join-date"></p></div></div><div class="stat-item" style="text-align:center; width: 60%; margin: 0 auto;"><h3 id="profile-ads-watched">0</h3><p>Ads Watched Today</p></div><button class="action-button developer-button" id="developer-contact-button"><i class="fas fa-code"></i> Contact Developer</button></div></div>
+    </main>
+    
+    <nav><button class="nav-button active" data-page="home-page"><i class="fas fa-home"></i><p>Home</p></button><button class="nav-button" data-page="earn-page"><i class="fas fa-play-circle"></i><p>Earn</p></button><button class="nav-button" data-page="withdraw-page"><i class="fas fa-wallet"></i><p>Withdraw</p></button><button class="nav-button" data-page="referral-page"><i class="fas fa-users"></i><p>Referral</p></button><button class="nav-button" data-page="profile-page"><i class="fas fa-user"></i><p>Profile</p></button></nav>
 
     <script>
-        const ADMIN_PASSWORD="40707@#$";
-        
-        function authenticate(){const e=document.getElementById("login-button"),t=document.getElementById("admin-password"),o=document.getElementById("login-error"),n=document.getElementById("togglePassword");n.addEventListener("click",function(){const e="password"===t.type?"text":"password";t.setAttribute("type",e),this.classList.toggle("fa-eye-slash")}),e.addEventListener("click",()=>{t.value===ADMIN_PASSWORD?(document.getElementById("login-overlay").style.opacity="0",setTimeout(()=>{document.getElementById("login-overlay").style.display="none"},500),document.getElementById("admin-content").style.display="block",initializeApp()):(o.textContent="Incorrect password!",t.value="")}),t.addEventListener("keyup",t=>{"Enter"===t.key&&e.click()})}
+        document.addEventListener('DOMContentLoaded', async () => {
+            const tg = window.Telegram.WebApp;
+            tg.ready(); tg.expand();
 
-        function initializeApp(){
-            const firebaseConfig={apiKey:"AIzaSyBNBAupa-P-NA5WuttGiGFiL0TPUmcU0NM",authDomain:"chats-ab4af.firebaseapp.com",databaseURL:"https://chats-ab4af-default-rtdb.firebaseio.com",projectId:"chats-ab4af",storageBucket:"chats-ab4af.appspot.com",messagingSenderId:"317093436715",appId:"1:317093436715:web:5cf4391b87f51eade4b96e"};firebase.initializeApp(e);const t=firebase.database(),o=t.ref("config");o.on("value",e=>{const t=e.val();t&&(document.getElementById("bot-name").value=t.BOT_NAME||"",document.getElementById("bot-username").value=t.BOT_USERNAME||"",document.getElementById("reward-ad").value=t.REWARD_PER_AD||0,document.getElementById("ad-limit").value=t.BASE_AD_LIMIT||0,document.getElementById("min-withdraw").value=t.MINIMUM_WITHDRAWAL_COINS||0,document.getElementById("reward-referral").value=t.REWARD_PER_REFERRAL||0,document.getElementById("max-referrals").value=t.MAX_REFERRALS||0,document.getElementById("monetag-zone-id").value=t.monetagZoneId||"")}),document.getElementById("save-config").addEventListener("click",()=>{const e={BOT_NAME:document.getElementById("bot-name").value,BOT_USERNAME:document.getElementById("bot-username").value,REWARD_PER_AD:Number(document.getElementById("reward-ad").value),BASE_AD_LIMIT:Number(document.getElementById("ad-limit").value),MINIMUM_WITHDRAWAL_COINS:Number(document.getElementById("min-withdraw").value),REWARD_PER_REFERRAL:Number(document.getElementById("reward-referral").value),MAX_REFERRALS:Number(document.getElementById("max-referrals").value),monetagZoneId:document.getElementById("monetag-zone-id").value};o.update(e).then(()=>{const e=document.getElementById("status-message");e.textContent="Settings saved successfully!",e.style.color="green",setTimeout(()=>e.textContent="",3e3)})});const n=document.getElementById("ban-user-btn"),d=document.getElementById("unban-user-btn");n.addEventListener("click",()=>manageUserBan(!0)),d.addEventListener("click",()=>manageUserBan(!1));const a=t.ref("withdrawals");a.on("value",e=>{/*...*/})}
-        
-        async function manageUserBan(isBanning) {
-            const userIdInput = document.getElementById('user-id-ban');
-            const userId = userIdInput.value.trim();
-            if (!userId) {
-                alert('Please enter a User ID.');
-                return;
-            }
-            const userRef = firebase.database().ref(`users/${userId}`);
-            const snapshot = await userRef.get();
-            if (!snapshot.exists()) {
-                alert('User not found!');
-                return;
-            }
-            await userRef.update({ isBanned: isBanning });
-            alert(`User ${userId} has been successfully ${isBanning ? 'banned' : 'unbanned'}.`);
-            userIdInput.value = '';
-        }
+            function createMoneyAnimation(){/*...*/} createMoneyAnimation();
 
-        function showDetails(e){/*...*/}
-        function closeModal(){/*...*/}
-        async function approveWithdrawal(e,t){/*...*/}
-        async function rejectWithdrawal(e,t,o){
-            const n=prompt("Send your withdrawal request again");if(null===n)return;const d=firebase.database().ref(`/users/${t}/coins`);await d.transaction(e=>(e||0)+o);const a={};a[`/withdrawals/${e}/status`]="Rejected",a[`/withdrawals/${e}/rejectionReason`]=n,a[`/users/${t}/withdrawalHistory/${e}/status`]="Rejected",a[`/users/${t}/withdrawalHistory/${e}/rejectionReason`]=n,await firebase.database().ref().update(a),alert("Withdrawal Rejected and coins refunded!")
-        }
-        
-        authenticate();
+            const firebaseConfig = {apiKey:"AIzaSyBNBAupa-P-NA5WuttGiGFiL0TPUmcU0NM",authDomain:"chats-ab4af.firebaseapp.com",databaseURL:"https://chats-ab4af-default-rtdb.firebaseio.com",projectId:"chats-ab4af",storageBucket:"chats-ab4af.appspot.com",messagingSenderId:"317093436715",appId:"1:317093436715:web:5cf4391b87f51eade4b96e"};
+            firebase.initializeApp(firebaseConfig);
+            const db = firebase.database();
+            
+            const app = {
+                userData: null, config: null, countdownInterval: null,
+                
+                async init() {
+                    this.startLoadingAnimation();
+                    let tgUser = { id: 12345, first_name: 'Test', last_name: 'User', username: 'testuser', photo_url: null };
+                    if (tg.initDataUnsafe && tg.initDataUnsafe.user) tgUser = tg.initDataUnsafe.user;
+                    this.bindNavEvents(); 
+                    this.showPage('home-page'); 
+                    await this.loadConfig();
+                    await this.loadOrCreateUser(tgUser);
+                },
+
+                startLoadingAnimation() {
+                    const percentageText=document.getElementById('loader-percentage');const progressBar=document.getElementById('loader-progress-bar');let currentProgress=0;this.loadingInterval=setInterval(()=>{currentProgress+=Math.floor(Math.random()*5)+1;if(currentProgress>=90)clearInterval(this.loadingInterval);if(percentageText&&progressBar){percentageText.textContent=`${currentProgress}%`;progressBar.style.width=`${currentProgress}%`}},100)
+                },
+                completeLoadingAnimation() {
+                    clearInterval(this.loadingInterval);const percentageText=document.getElementById('loader-percentage');const progressBar=document.getElementById('loader-progress-bar');if(percentageText&&progressBar){percentageText.textContent=`100%`;progressBar.style.width=`100%`}const loader=document.getElementById('loader-overlay');if(loader)setTimeout(()=>{loader.style.opacity='0';setTimeout(()=>loader.style.display='none',500)},300)
+                },
+                
+                async loadConfig() {
+                    const configRef=db.ref('config');configRef.on('value',snapshot=>{if(snapshot.exists()){this.config=snapshot.val()}else{this.config={BOT_NAME:"CryptoCash",BOT_USERNAME:"CryptoCash_ad_bot",DEVELOPER_USERNAME:"akramulhouq63",REWARD_PER_AD:1,BASE_AD_LIMIT:30,MINIMUM_WITHDRAWAL_COINS:1,COINS_PER_DOLLAR:3e3,REWARD_PER_REFERRAL:1,MAX_REFERRALS:10,monetagZoneId:"9733821",textLabels:{todayTasksTitle:"Today's Ad Tasks",totalTasksLabel:"Total Tasks",completedLabel:"Completed",remainingLabel:"Remaining"}};configRef.set(this.config)}this.loadAdNetworkScript(this.config.monetagZoneId);this.updateStaticTexts();if(this.userData)this.updateUI(document.querySelector('.page.active').id)})
+                },
+                
+                loadAdNetworkScript(zoneId){if(!zoneId||document.querySelector(`script[data-zone='${zoneId}']`))return;const script=document.createElement('script');script.src='//libtl.com/sdk.js';script.dataset.zone=zoneId;script.dataset.sdk=`show_${zoneId}`;script.async=!0;document.head.appendChild(script)},
+
+                updateStaticTexts(){if(!this.config)return;document.getElementById('bot-name-display').innerText=this.config.BOT_NAME;const labels=this.config.textLabels||{};document.getElementById('today-tasks-title').innerText=labels.todayTasksTitle||"Today's Ad Tasks";document.querySelector('.task-summary-item:nth-child(1) p').innerText=labels.totalTasksLabel||"Total Tasks";document.querySelector('.task-summary-item:nth-child(2) p').innerText=labels.completedLabel||"Completed";document.querySelector('.task-summary-item:nth-child(3) p').innerText=labels.remainingLabel||"Remaining"},
+
+                showBanScreen(){document.getElementById('loader-overlay').style.display='none';document.querySelector('main').style.display='none';document.querySelector('nav').style.display='none';document.querySelector('header').style.display='none';document.getElementById('ban-overlay').style.display='flex'},
+
+                async loadOrCreateUser(tgUser) {
+                    const userRef=db.ref('users/'+tgUser.id);userRef.on('value',snapshot=>{if(this.userData&&this.userData.isBanned)return;const today=(new Date).toLocaleDateString();if(snapshot.exists()){this.userData=snapshot.val();if(this.userData.isBanned){this.showBanScreen();return}if(this.userData.lastAdResetDate!==today)db.ref(`users/${tgUser.id}`).update({adsWatchedToday:0,lastAdResetDate:today})}else{const newUser={id:tgUser.id,name:`${tgUser.first_name} ${tgUser.last_name||""}`.trim(),username:tgUser.username||"N/A",coins:0,referrals:0,totalEarnedCoins:0,adsWatchedToday:0,lastAdResetDate:today,profilePicUrl:tgUser.photo_url||"https://t4.ftcdn.net/jpg/00/64/67/63/300_F_64676383_LdbmhiNM6Ypzb3FM4PPuFP9rHe7ri8Ju.jpg",joinDate:today,isBanned:!1,withdrawalHistory:{}};userRef.set(newUser);this.userData=newUser}if(this.config)this.updateUI(document.querySelector('.page.active').id);this.completeLoadingAnimation()})
+                },
+                
+                showPage(pageId){if(this.userData&&this.userData.isBanned)return;clearInterval(this.countdownInterval);window.scrollTo(0,0);document.querySelectorAll(".page").forEach(e=>e.classList.remove("active"));document.getElementById(pageId).classList.add("active");document.querySelectorAll(".nav-button").forEach(e=>e.classList.toggle("active",e.dataset.page===pageId));this.userData&&this.config&&this.updateUI(pageId);this.bindPageSpecificEvents(pageId)},
+                
+                updateUI(pageId){const u=this.userData,c=this.config;if(!u||!c)return;document.getElementById("user-id-display").innerText=`ID: ${u.id}`;document.getElementById("header-profile-pic").src=u.profilePicUrl;document.getElementById("withdraw-amount").placeholder=`Min: ${c.MINIMUM_WITHDRAWAL_COINS} Coin(s)`;document.getElementById("max-referrals-display").innerText=c.MAX_REFERRALS;if("home-page"===pageId){document.getElementById("balance-display").innerText=(u.coins||0).toLocaleString();document.getElementById("referrals-display").innerText=u.referrals||0;document.getElementById("total-earning-display").innerText=(u.totalEarnedCoins||0).toLocaleString()}if("earn-page"===pageId){const limitReached=u.adsWatchedToday>=c.BASE_AD_LIMIT;document.getElementById("watch-ad-container").classList.toggle("hidden",limitReached);document.getElementById("countdown-container").classList.toggle("hidden",!limitReached);if(limitReached)this.startCountdown();else{document.getElementById("total-tasks-display").innerText=c.BASE_AD_LIMIT;document.getElementById("completed-tasks-display").innerText=u.adsWatchedToday;document.getElementById("remaining-tasks-display").innerText=c.BASE_AD_LIMIT-u.adsWatchedToday;document.getElementById("watch-ad-button").innerHTML=`Watch Ad (+${c.REWARD_PER_AD} <i class="fas fa-coins"></i>)`;document.getElementById("watch-ad-button").disabled=!1}}if("withdraw-page"===pageId){document.getElementById("withdraw-balance-display").innerHTML=`${(u.coins||0).toLocaleString()} <i class="fas fa-coins"></i>`;this.renderPaymentMethods();this.updateLiveConversion();this.renderWithdrawalHistory()}if("referral-page"===pageId)document.getElementById("referral-link").innerText=`https://t.me/${c.BOT_USERNAME}?start=${u.id}`;if("profile-page"===pageId){document.getElementById("profile-pic").src=u.profilePicUrl;document.getElementById("profile-name").innerText=u.name;document.getElementById("profile-username").innerText=`@${u.username}`;document.getElementById("profile-tg-id").innerText=u.id;document.getElementById("profile-join-date").innerText=u.joinDate;document.getElementById("profile-ads-watched").innerText=u.adsWatchedToday}},
+                
+                renderWithdrawalHistory(){const container=document.getElementById("withdrawal-history-container"),history=this.userData.withdrawalHistory;if(!history||Object.keys(history).length===0)return void(container.innerHTML='<p class="no-history">No withdrawal history yet.</p>');const sortedHistory=Object.values(history).sort((a,b)=>b.timestamp-a.timestamp);container.innerHTML=sortedHistory.map(item=>{const reasonHtml="Rejected"===item.status&&item.rejectionReason?`<div class="rejection-reason"><b>Reason:</b> ${item.rejectionReason}</div>`:"";return`<div class="history-item"><div class="history-details"><div class="history-info"><p class="amount"><i class="fas fa-coins" style="color:var(--coin-color)"></i> ${item.amount.toLocaleString()}</p><p class="date">${new Date(item.timestamp).toLocaleDateString()}</p></div><span class="history-status ${item.status.toLowerCase()}">${item.status}</span></div>${reasonHtml}</div>`}).join("")},
+                
+                async giveAdReward(){const newCount=(this.userData.adsWatchedToday||0)+1;const updates={adsWatchedToday:newCount,coins:(this.userData.coins||0)+this.config.REWARD_PER_AD,totalEarnedCoins:(this.userData.totalEarnedCoins||0)+this.config.REWARD_PER_AD};if(newCount>=this.config.BASE_AD_LIMIT)updates.lastAdResetTimestamp=Date.now();await db.ref(`users/${this.userData.id}`).update(updates);tg.HapticFeedback.notificationOccurred("success");tg.showPopup({title:"Reward!",message:`You received ${this.config.REWARD_PER_AD} coins!`,buttons:[{type:"ok"}]})},
+                
+                startCountdown(){const resetTime=(this.userData.lastAdResetTimestamp||0)+864e5;const timerElement=document.getElementById("countdown-timer");if(this.countdownInterval)clearInterval(this.countdownInterval);this.countdownInterval=setInterval(()=>{const distance=resetTime-Date.now();if(distance<0){clearInterval(this.countdownInterval);const today=(new Date).toLocaleDateString();db.ref(`users/${this.userData.id}`).update({adsWatchedToday:0,lastAdResetDate:today});return}const h=String(Math.floor(distance%864e5/36e5)).padStart(2,"0"),m=String(Math.floor(distance%36e5/6e4)).padStart(2,"0"),s=String(Math.floor(distance%6e4/1e3)).padStart(2,"0");timerElement.innerText=`${h}:${m}:${s}`},1e3)},
+                
+                async handleSubmitWithdrawal(){const amountInput=document.getElementById("withdraw-amount"),addressInput=document.getElementById("wallet-address"),amount=parseInt(amountInput.value);if(!amount||amount<this.config.MINIMUM_WITHDRAWAL_COINS)return void tg.showAlert(`Minimum withdrawal is ${this.config.MINIMUM_WITHDRAWAL_COINS} coins.`);if(amount>this.userData.coins)return void tg.showAlert("You don't have enough coins.");if(!addressInput.value.trim())return void tg.showAlert("Please enter a valid address.");const newWithdrawalRef=db.ref("withdrawals").push(),withdrawalId=newWithdrawalRef.key,timestamp=Date.now(),withdrawalData={id:withdrawalId,userId:this.userData.id,username:this.userData.username,amount:amount,address:addressInput.value.trim(),status:"Pending",timestamp:timestamp,rejectionReason:""},updates={};updates[`/users/${this.userData.id}/coins`]=this.userData.coins-amount;updates[`/users/${this.userData.id}/withdrawalHistory/${withdrawalId}`]={amount:amount,status:"Pending",timestamp:timestamp,rejectionReason:""};updates[`/withdrawals/${withdrawalId}`]=withdrawalData;await db.ref().update(updates);amountInput.value="";addressInput.value="";tg.showPopup({title:"Success",message:"Withdrawal request submitted!",buttons:[{type:"ok"}]})},
+                
+                bindNavEvents(){document.querySelector("nav").addEventListener("click",e=>{const t=e.target.closest(".nav-button");t&&(tg.HapticFeedback.selectionChanged(),this.showPage(t.dataset.page))})},bindPageSpecificEvents(pageId){if("earn-page"===pageId)document.getElementById("watch-ad-button").onclick=()=>this.handleWatchAd();if("withdraw-page"===pageId){document.getElementById("withdraw-amount").addEventListener("input",()=>this.updateLiveConversion());document.getElementById("submit-withdrawal-button").onclick=()=>this.handleSubmitWithdrawal()}if("profile-page"===pageId)document.getElementById("developer-contact-button").onclick=()=>tg.openTelegramLink(`https://t.me/${this.config.DEVELOPER_USERNAME}`);if("referral-page"===pageId){const link=document.getElementById("referral-link").innerText,text=`Check out this cool bot! ${link}`;document.getElementById("share-telegram").onclick=()=>window.open(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`);document.getElementById("share-twitter").onclick=()=>window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`);document.getElementById("share-facebook").onclick=()=>window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`)}},
+                
+                handleWatchAd(){document.getElementById("watch-ad-button").disabled=!0;tg.HapticFeedback.impactOccurred("light");const adFunction=window[`show_${this.config.monetagZoneId}`];"function"==typeof adFunction?adFunction().then(()=>{this.giveAdReward()}):(tg.showAlert("Ad not available. Please try again later."),document.getElementById("watch-ad-button").disabled=!1)},
+                
+                renderPaymentMethods(){document.getElementById("payment-methods-container").innerHTML='<div class="method active"><img src="https://i.ibb.co/pBN6DsRy/binance-logo.png"><p>Binance</p></div>'},
+                
+                updateLiveConversion(){const amount=parseInt(document.getElementById("withdraw-amount").value)||0,canWithdraw=amount>=this.config.MINIMUM_WITHDRAWAL_COINS&&amount<=this.userData.coins;document.getElementById("live-conversion-display").innerText=amount>0?`≈ $${(amount/this.config.COINS_PER_DOLLAR).toFixed(2)}`:"";document.getElementById("submit-withdrawal-button").disabled=!canWithdraw}
+            };
+            app.init();
+        });
     </script>
 </body>
 </html>
