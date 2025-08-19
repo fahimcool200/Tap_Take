@@ -6,182 +6,213 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: #f4f7f9; color: #333; }
-        .container { max-width: 1200px; margin: 20px auto; padding: 20px; }
-        h1, h2 { color: #4A00E0; border-bottom: 2px solid #ddd; padding-bottom: 10px;}
-        .card { background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 20px; padding: 20px; }
+        body { font-family: 'Poppins', sans-serif; margin: 0; background-color: #f4f7fa; color: #333; line-height: 1.6; }
+        header { background: linear-gradient(90deg, #4A00E0, #8A2BE2); color: white; padding: 20px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        header h1 { margin: 0; font-weight: 600; }
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        .card { background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.07); margin-bottom: 30px; overflow: hidden; }
+        .card-header { padding: 20px; border-bottom: 1px solid #eef2f7; }
+        .card-header h2 { margin: 0; font-size: 1.25em; color: #4A00E0; }
+        .card-content { padding: 20px; }
         table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
-        th { background-color: #f8f8f8; }
-        .btn { padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer; color: white; font-weight: bold; }
-        .btn-approve { background-color: #28a745; }
-        .btn-reject { background-color: #dc3545; }
-        .status { padding: 4px 8px; border-radius: 12px; font-size: 0.9em; color: white; }
-        .status-approved { background: #28a745; }
-        .status-rejected { background: #dc3545; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
-        .form-group { display: flex; flex-direction: column; }
-        .form-group label { margin-bottom: 5px; font-weight: bold; color: #555; }
-        .form-group input { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 1em; }
-        #save-config { background-color: #4A00E0; margin-top: 20px; font-size: 1.1em; }
-        #status-message { text-align: center; font-weight: bold; margin-top: 10px; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #eef2f7; }
+        th { font-weight: 600; color: #555; font-size: 0.9em; text-transform: uppercase; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background-color: #f9fafb; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; color: white; font-weight: 500; transition: all 0.2s ease; font-family: 'Poppins'; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .btn-approve { background-color: #10b981; }
+        .btn-reject { background-color: #ef4444; margin-left: 8px; }
+        .status { padding: 5px 12px; border-radius: 99px; font-size: 0.85em; font-weight: 600; text-align: center; }
+        .status-approved { background-color: #d1fae5; color: #065f46; }
+        .status-rejected { background-color: #fee2e2; color: #991b1b; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #555; }
+        .form-group input { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 1em; box-sizing: border-box; transition: border-color 0.2s, box-shadow 0.2s; }
+        .form-group input:focus { border-color: #4A00E0; box-shadow: 0 0 0 3px rgba(74, 0, 224, 0.1); outline: none; }
+        #save-config { background: #4A00E0; margin-top: 20px; font-size: 1.1em; width: 100%; padding: 14px; }
+        #status-message { text-align: center; font-weight: 600; margin-top: 15px; transition: opacity 0.3s; }
+        #admin-content, #access-denied { display: none; }
+        #access-denied { text-align: center; padding: 50px; font-size: 1.5em; color: #ef4444; font-weight: 600; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>CryptoCash Admin Panel</h1>
+    <header><h1>CryptoCash Admin Panel</h1></header>
 
+    <div id="access-denied"><p>Access Denied! Incorrect Password.</p></div>
+
+    <div class="container" id="admin-content">
         <div class="card">
-            <h2>App Configuration</h2>
-            <div class="form-grid">
-                <div class="form-group"><label for="bot-name">Bot Name</label><input type="text" id="bot-name"></div>
-                <div class="form-group"><label for="bot-username">Bot Username</label><input type="text" id="bot-username"></div>
-                <div class="form-group"><label for="reward-ad">Reward per Ad</label><input type="number" id="reward-ad"></div>
-                <div class="form-group"><label for="ad-limit">Daily Ad Limit</label><input type="number" id="ad-limit"></div>
-                <div class="form-group"><label for="min-withdraw">Min Withdrawal Coins</label><input type="number" id="min-withdraw"></div>
-                <div class="form-group"><label for="reward-referral">Reward per Referral</label><input type="number" id="reward-referral"></div>
-                <div class="form-group"><label for="max-referrals">Max Referrals Limit</label><input type="number" id="max-referrals"></div>
+            <div class="card-header"><h2>App Configuration</h2></div>
+            <div class="card-content">
+                <div class="form-grid">
+                    <div class="form-group"><label for="bot-name">Bot Name</label><input type="text" id="bot-name"></div>
+                    <div class="form-group"><label for="bot-username">Bot Username</label><input type="text" id="bot-username"></div>
+                    <div class="form-group"><label for="reward-ad">Reward per Ad</label><input type="number" id="reward-ad"></div>
+                    <div class="form-group"><label for="ad-limit">Daily Ad Limit</label><input type="number" id="ad-limit"></div>
+                    <div class="form-group"><label for="min-withdraw">Min Withdrawal Coins</label><input type="number" id="min-withdraw"></div>
+                    <div class="form-group"><label for="reward-referral">Reward per Referral</label><input type="number" id="reward-referral"></div>
+                    <div class="form-group"><label for="max-referrals">Max Referrals Limit</label><input type="number" id="max-referrals"></div>
+                </div>
+                <button class="btn" id="save-config">Save Settings</button>
+                <p id="status-message"></p>
             </div>
-            <button class="btn" id="save-config">Save Settings</button>
-            <p id="status-message"></p>
         </div>
 
         <div class="card">
-            <h2>Pending Withdrawals</h2>
-            <table id="pending-table">
-                <thead><tr><th>User ID</th><th>Username</th><th>Amount</th><th>Address</th><th>Date</th><th>Actions</th></tr></thead>
-                <tbody><tr><td colspan="6">Loading...</td></tr></tbody>
-            </table>
+            <div class="card-header"><h2>Pending Withdrawals</h2></div>
+            <div class="card-content">
+                <table id="pending-table">
+                    <thead><tr><th>User ID</th><th>Username</th><th>Amount</th><th>Address</th><th>Date</th><th>Actions</th></tr></thead>
+                    <tbody><tr><td colspan="6">Loading...</td></tr></tbody>
+                </table>
+            </div>
         </div>
-
+        
         <div class="card">
-            <h2>Processed Withdrawals</h2>
-            <table id="processed-table">
-                <thead><tr><th>User ID</th><th>Username</th><th>Amount</th><th>Address</th><th>Date</th><th>Status</th></tr></thead>
-                <tbody></tbody>
-            </table>
+            <div class="card-header"><h2>Processed Withdrawals</h2></div>
+            <div class="card-content">
+                <table id="processed-table">
+                    <thead><tr><th>User ID</th><th>Username</th><th>Amount</th><th>Address</th><th>Date</th><th>Status</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <script>
-        // ===================================================================
-        // আপনার নিজের ফায়ারবেস কনফিগারেশন এখানেও পেস্ট করুন
-        // ===================================================================
-        const firebaseConfig = {
-            apiKey: "AIzaSyBNBAupa-P-NA5WuttGiGFiL0TPUmcU0NM",
-            authDomain: "chats-ab4af.firebaseapp.com",
-            databaseURL: "https://chats-ab4af-default-rtdb.firebaseio.com",
-            projectId: "chats-ab4af",
-            storageBucket: "chats-ab4af.appspot.com",
-            messagingSenderId: "317093436715",
-            appId: "1:317093436715:web:5cf4391b87f51eade4b96e"
-        };
+        // ===============================================================
+        // এখানে আপনার নিজের একটি কঠিন পাসওয়ার্ড দিন
+        // ===============================================================
+        const ADMIN_PASSWORD = "40707@#$";
 
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-
-        // Load and display configuration
-        const configRef = db.ref('config');
-        configRef.on('value', (snapshot) => {
-            const config = snapshot.val();
-            if (config) {
-                document.getElementById('bot-name').value = config.BOT_NAME;
-                document.getElementById('bot-username').value = config.BOT_USERNAME;
-                document.getElementById('reward-ad').value = config.REWARD_PER_AD;
-                document.getElementById('ad-limit').value = config.BASE_AD_LIMIT;
-                document.getElementById('min-withdraw').value = config.MINIMUM_WITHDRAWAL_COINS;
-                document.getElementById('reward-referral').value = config.REWARD_PER_REFERRAL;
-                document.getElementById('max-referrals').value = config.MAX_REFERRALS;
+        function authenticate() {
+            const password = prompt("Please enter the admin password:");
+            if (password === ADMIN_PASSWORD) {
+                document.getElementById('admin-content').style.display = 'block';
+                initializeApp();
+            } else {
+                document.getElementById('access-denied').style.display = 'block';
+                alert("Incorrect password!");
             }
-        });
+        }
 
-        // Save configuration
-        document.getElementById('save-config').addEventListener('click', () => {
-            const newConfig = {
-                BOT_NAME: document.getElementById('bot-name').value,
-                BOT_USERNAME: document.getElementById('bot-username').value,
-                REWARD_PER_AD: Number(document.getElementById('reward-ad').value),
-                BASE_AD_LIMIT: Number(document.getElementById('ad-limit').value),
-                MINIMUM_WITHDRAWAL_COINS: Number(document.getElementById('min-withdraw').value),
-                REWARD_PER_REFERRAL: Number(document.getElementById('reward-referral').value),
-                MAX_REFERRALS: Number(document.getElementById('max-referrals').value),
+        function initializeApp() {
+            const firebaseConfig = {
+                apiKey: "AIzaSyBNBAupa-P-NA5WuttGiGFiL0TPUmcU0NM",
+                authDomain: "chats-ab4af.firebaseapp.com",
+                databaseURL: "https://chats-ab4af-default-rtdb.firebaseio.com",
+                projectId: "chats-ab4af",
+                storageBucket: "chats-ab4af.appspot.com",
+                messagingSenderId: "317093436715",
+                appId: "1:317093436715:web:5cf4391b87f51eade4b96e"
             };
-            configRef.update(newConfig).then(() => {
-                const statusMsg = document.getElementById('status-message');
-                statusMsg.textContent = 'Settings saved successfully!';
-                statusMsg.style.color = 'green';
-                setTimeout(() => statusMsg.textContent = '', 3000);
-            });
-        });
 
-        // Load and display withdrawals
-        const withdrawalsRef = db.ref('withdrawals');
-        withdrawalsRef.on('value', (snapshot) => {
-            const withdrawals = snapshot.val();
-            const pendingBody = document.querySelector('#pending-table tbody');
-            const processedBody = document.querySelector('#processed-table tbody');
-            pendingBody.innerHTML = '';
-            processedBody.innerHTML = '';
+            firebase.initializeApp(firebaseConfig);
+            const db = firebase.database();
 
-            if (!withdrawals) {
-                pendingBody.innerHTML = '<tr><td colspan="6">No pending withdrawals.</td></tr>';
-                return;
-            }
-            
-            // Sort by timestamp descending
-            const sortedWithdrawals = Object.values(withdrawals).sort((a,b) => b.timestamp - a.timestamp);
-
-            for (const item of sortedWithdrawals) {
-                const date = new Date(item.timestamp).toLocaleString();
-                if (item.status === 'Pending') {
-                    const row = `<tr>
-                        <td>${item.userId}</td>
-                        <td>@${item.username}</td>
-                        <td>${item.amount}</td>
-                        <td>${item.address}</td>
-                        <td>${date}</td>
-                        <td>
-                            <button class="btn btn-approve" onclick="approveWithdrawal('${item.id}', '${item.userId}')">Approve</button>
-                            <button class="btn btn-reject" onclick="rejectWithdrawal('${item.id}', '${item.userId}', ${item.amount})">Reject</button>
-                        </td>
-                    </tr>`;
-                    pendingBody.innerHTML += row;
-                } else {
-                     const row = `<tr>
-                        <td>${item.userId}</td>
-                        <td>@${item.username}</td>
-                        <td>${item.amount}</td>
-                        <td>${item.address}</td>
-                        <td>${date}</td>
-                        <td><span class="status status-${item.status.toLowerCase()}">${item.status}</span></td>
-                    </tr>`;
-                    processedBody.innerHTML += row;
+            // Load and display configuration
+            const configRef = db.ref('config');
+            configRef.on('value', (snapshot) => {
+                const config = snapshot.val();
+                if (config) {
+                    document.getElementById('bot-name').value = config.BOT_NAME;
+                    document.getElementById('bot-username').value = config.BOT_USERNAME;
+                    document.getElementById('reward-ad').value = config.REWARD_PER_AD;
+                    document.getElementById('ad-limit').value = config.BASE_AD_LIMIT;
+                    document.getElementById('min-withdraw').value = config.MINIMUM_WITHDRAWAL_COINS;
+                    document.getElementById('reward-referral').value = config.REWARD_PER_REFERRAL;
+                    document.getElementById('max-referrals').value = config.MAX_REFERRALS;
                 }
-            }
-        });
+            });
 
+            // Save configuration
+            document.getElementById('save-config').addEventListener('click', () => {
+                const newConfig = {
+                    BOT_NAME: document.getElementById('bot-name').value,
+                    BOT_USERNAME: document.getElementById('bot-username').value,
+                    REWARD_PER_AD: Number(document.getElementById('reward-ad').value),
+                    BASE_AD_LIMIT: Number(document.getElementById('ad-limit').value),
+                    MINIMUM_WITHDRAWAL_COINS: Number(document.getElementById('min-withdraw').value),
+                    REWARD_PER_REFERRAL: Number(document.getElementById('reward-referral').value),
+                    MAX_REFERRALS: Number(document.getElementById('max-referrals').value),
+                };
+                configRef.update(newConfig).then(() => {
+                    const statusMsg = document.getElementById('status-message');
+                    statusMsg.textContent = 'Settings saved successfully!';
+                    statusMsg.style.color = 'green';
+                    setTimeout(() => statusMsg.textContent = '', 3000);
+                });
+            });
+
+            // Load and display withdrawals
+            const withdrawalsRef = db.ref('withdrawals');
+            withdrawalsRef.on('value', (snapshot) => {
+                const withdrawals = snapshot.val();
+                const pendingBody = document.querySelector('#pending-table tbody');
+                const processedBody = document.querySelector('#processed-table tbody');
+                pendingBody.innerHTML = '';
+                processedBody.innerHTML = '';
+
+                if (!withdrawals) {
+                    pendingBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No pending withdrawals.</td></tr>';
+                    return;
+                }
+                
+                const sortedWithdrawals = Object.values(withdrawals).sort((a,b) => b.timestamp - a.timestamp);
+                let hasPending = false;
+
+                for (const item of sortedWithdrawals) {
+                    const date = new Date(item.timestamp).toLocaleString();
+                    if (item.status === 'Pending') {
+                        hasPending = true;
+                        const row = `<tr>
+                            <td>${item.userId}</td><td>@${item.username}</td><td>${item.amount}</td>
+                            <td>${item.address}</td><td>${date}</td>
+                            <td>
+                                <button class="btn btn-approve" onclick="approveWithdrawal('${item.id}', '${item.userId}')">Approve</button>
+                                <button class="btn btn-reject" onclick="rejectWithdrawal('${item.id}', '${item.userId}', ${item.amount})">Reject</button>
+                            </td></tr>`;
+                        pendingBody.innerHTML += row;
+                    } else {
+                         const row = `<tr>
+                            <td>${item.userId}</td><td>@${item.username}</td><td>${item.amount}</td>
+                            <td>${item.address}</td><td>${date}</td>
+                            <td><span class="status status-${item.status.toLowerCase()}">${item.status}</span></td></tr>`;
+                        processedBody.innerHTML += row;
+                    }
+                }
+                if (!hasPending) {
+                    pendingBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No pending withdrawals.</td></tr>';
+                }
+            });
+        }
+        
         async function approveWithdrawal(withdrawalId, userId) {
             const updates = {};
             updates[`/withdrawals/${withdrawalId}/status`] = 'Approved';
             updates[`/users/${userId}/withdrawalHistory/${withdrawalId}/status`] = 'Approved';
-            await db.ref().update(updates);
+            await firebase.database().ref().update(updates);
             alert('Withdrawal Approved!');
         }
 
         async function rejectWithdrawal(withdrawalId, userId, amount) {
-            // Refund coins to user using a transaction
-            const userCoinsRef = db.ref(`/users/${userId}/coins`);
-            await userCoinsRef.transaction((currentCoins) => {
-                return (currentCoins || 0) + amount;
-            });
+            const userCoinsRef = firebase.database().ref(`/users/${userId}/coins`);
+            await userCoinsRef.transaction((currentCoins) => (currentCoins || 0) + amount);
 
             const updates = {};
             updates[`/withdrawals/${withdrawalId}/status`] = 'Rejected';
             updates[`/users/${userId}/withdrawalHistory/${withdrawalId}/status`] = 'Rejected';
-            await db.ref().update(updates);
+            await firebase.database().ref().update(updates);
             alert('Withdrawal Rejected and coins refunded!');
         }
+        
+        // Authenticate on page load
+        authenticate();
     </script>
 </body>
 </html>
