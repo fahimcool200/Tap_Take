@@ -2,376 +2,186 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <title>CryptoCash Admin Panel</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Account Actions - TapTak</title>
-    
-    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        :root {
-            --primary-color: #007BFF;
-            --success-color: #28a745;
-            --error-color: #dc3545;
-            --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            background: var(--bg-gradient);
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        .container {
-            background: #fff;
-            padding: 40px 30px;
-            border-radius: 16px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 420px;
-            text-align: center;
-            border-top: 5px solid var(--primary-color);
-            transform: scale(0.95);
-            opacity: 0;
-            animation: fadeInScale 0.5s forwards ease-out;
-        }
-
-        @keyframes fadeInScale {
-            to {
-                transform: scale(1);
-                opacity: 1;
-            }
-        }
-        
-        .app-header {
-            margin-bottom: 25px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .app-logo {
-            font-size: 48px;
-            color: var(--primary-color);
-            line-height: 1;
-        }
-
-        .app-name {
-            font-size: 1.8em;
-            color: #2c3e50;
-            font-weight: 700;
-        }
-
-        h2 {
-            margin-bottom: 10px;
-            color: #34495e;
-            font-weight: 600;
-            font-size: 1.6em;
-        }
-
-        p.subtitle {
-            font-size: 0.95em; 
-            color: #7f8c8d; 
-            margin-bottom: 25px;
-            line-height: 1.5;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-            text-align: left;
-            position: relative;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #555;
-        }
-        
-        .password-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-        
-        input[type="password"], input[type="text"] {
-            width: 100%;
-            padding: 14px 45px 14px 16px; /* ডান দিকে আইকনের জন্য জায়গা */
-            border: 1px solid #dce4ec;
-            border-radius: 8px;
-            font-size: 1em;
-            box-sizing: border-box;
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-
-        input:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
-            outline: none;
-        }
-
-        .password-toggle-icon {
-            position: absolute;
-            right: 15px;
-            cursor: pointer;
-            color: #999;
-            width: 20px;
-            text-align: center;
-        }
-
-        a.primary-btn, button.primary-btn {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 8px;
-            background-color: var(--primary-color);
-            color: white;
-            font-size: 1.1em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.25s, transform 0.2s, box-shadow 0.2s;
-            margin-top: 20px;
-            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.2);
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            box-sizing: border-box;
-        }
-
-        a.primary-btn:hover, button.primary-btn:hover {
-            background-color: #0069d9;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 123, 255, 0.3);
-        }
-        
-        a.primary-btn:active, button.primary-btn:active {
-            transform: translateY(0);
-        }
-
-        .message-area {
-            min-height: 40px;
-            margin-top: 20px;
-            font-weight: 500;
-            font-size: 0.95em;
-            padding: 12px;
-            border-radius: 8px;
-            display: none; /* Hidden by default */
-            line-height: 1.4;
-        }
-        .success-message { color: var(--success-color); background-color: #eafaf1; border: 1px solid #a9dfbf; display: block; }
-        .error-message { color: var(--error-color); background-color: #fbebec; border: 1px solid #f1c4c0; display: block; }
-        .info-message { color: #004085; background-color: #cce5ff; border: 1px solid #b8daff; display: block; }
-        
-        /* FINAL Success Animation using SVG */
-        .success-animation-container {
-            margin: 20px auto;
-        }
-        .checkmark {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            display: block;
-            stroke-width: 4;
-            stroke: #fff;
-            stroke-miterlimit: 10;
-            box-shadow: inset 0px 0px 0px var(--success-color);
-            animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
-            margin: 0 auto;
-        }
-        .checkmark__circle {
-            stroke-dasharray: 166;
-            stroke-dashoffset: 166;
-            stroke-width: 4;
-            stroke-miterlimit: 10;
-            stroke: var(--success-color);
-            fill: none;
-            animation: stroke .6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
-        }
-        .checkmark__check {
-            transform-origin: 50% 50%;
-            stroke-dasharray: 48;
-            stroke-dashoffset: 48;
-            animation: stroke .3s cubic-bezier(0.65, 0, 0.45, 1) .8s forwards;
-        }
-        @keyframes stroke {
-            100% { stroke-dashoffset: 0; }
-        }
-        @keyframes scale {
-            0%, 100% { transform: none; }
-            50% { transform: scale3d(1.1, 1.1, 1); }
-        }
-        @keyframes fill {
-            100% { box-shadow: inset 0px 0px 0px 50px var(--success-color); }
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: #f4f7f9; color: #333; }
+        .container { max-width: 1200px; margin: 20px auto; padding: 20px; }
+        h1, h2 { color: #4A00E0; border-bottom: 2px solid #ddd; padding-bottom: 10px;}
+        .card { background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 20px; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background-color: #f8f8f8; }
+        .btn { padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer; color: white; font-weight: bold; }
+        .btn-approve { background-color: #28a745; }
+        .btn-reject { background-color: #dc3545; }
+        .status { padding: 4px 8px; border-radius: 12px; font-size: 0.9em; color: white; }
+        .status-approved { background: #28a745; }
+        .status-rejected { background: #dc3545; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label { margin-bottom: 5px; font-weight: bold; color: #555; }
+        .form-group input { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 1em; }
+        #save-config { background-color: #4A00E0; margin-top: 20px; font-size: 1.1em; }
+        #status-message { text-align: center; font-weight: bold; margin-top: 10px; }
     </style>
 </head>
 <body>
+    <div class="container">
+        <h1>CryptoCash Admin Panel</h1>
 
-    <div class="container" id="action-container">
-        <!-- Header -->
-        <div class="app-header">
-            <div class="app-logo"><i class="fas fa-fingerprint"></i></div>
-            <h1 class="app-name">TapTak</h1>
+        <div class="card">
+            <h2>App Configuration</h2>
+            <div class="form-grid">
+                <div class="form-group"><label for="bot-name">Bot Name</label><input type="text" id="bot-name"></div>
+                <div class="form-group"><label for="bot-username">Bot Username</label><input type="text" id="bot-username"></div>
+                <div class="form-group"><label for="reward-ad">Reward per Ad</label><input type="number" id="reward-ad"></div>
+                <div class="form-group"><label for="ad-limit">Daily Ad Limit</label><input type="number" id="ad-limit"></div>
+                <div class="form-group"><label for="min-withdraw">Min Withdrawal Coins</label><input type="number" id="min-withdraw"></div>
+                <div class="form-group"><label for="reward-referral">Reward per Referral</label><input type="number" id="reward-referral"></div>
+                <div class="form-group"><label for="max-referrals">Max Referrals Limit</label><input type="number" id="max-referrals"></div>
+            </div>
+            <button class="btn" id="save-config">Save Settings</button>
+            <p id="status-message"></p>
         </div>
-        
-        <!-- Content Area -->
-        <div id="content-area">
-            <h2>Loading...</h2>
-            <p class="subtitle">Please wait while we process your request.</p>
+
+        <div class="card">
+            <h2>Pending Withdrawals</h2>
+            <table id="pending-table">
+                <thead><tr><th>User ID</th><th>Username</th><th>Amount</th><th>Address</th><th>Date</th><th>Actions</th></tr></thead>
+                <tbody><tr><td colspan="6">Loading...</td></tr></tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>Processed Withdrawals</h2>
+            <table id="processed-table">
+                <thead><tr><th>User ID</th><th>Username</th><th>Amount</th><th>Address</th><th>Date</th><th>Status</th></tr></thead>
+                <tbody></tbody>
+            </table>
         </div>
     </div>
 
     <script>
-        // --- Firebase Configuration ---
+        // ===================================================================
+        // আপনার নিজের ফায়ারবেস কনফিগারেশন এখানেও পেস্ট করুন
+        // ===================================================================
         const firebaseConfig = {
-  apiKey: "AIzaSyAkfey_pVTUQsS3dm8wkACPbW9JcFOwEDY",
-  authDomain: "taptak-v1.firebaseapp.com",
-  databaseURL: "https://taptak-v1-default-rtdb.firebaseio.com",
-  projectId: "taptak-v1",
-  storageBucket: "taptak-v1.firebasestorage.app",
-  messagingSenderId: "816844048979",
-  appId: "1:816844048979:web:f7074965ed4fdc779594a6",
-  measurementId: "G-TG2BDXWLF5"
-};
-        
-        let auth;
-        try {
-            firebase.initializeApp(firebaseConfig);
-            auth = firebase.auth();
-        } catch (e) {
-            console.error("Firebase init error:", e);
-            document.getElementById('content-area').innerHTML = `<h2>Initialization Error</h2><p class="error-message">Could not connect to services. Please try again later.</p>`;
-        }
+            apiKey: "AIzaSyBNBAupa-P-NA5WuttGiGFiL0TPUmcU0NM",
+            authDomain: "chats-ab4af.firebaseapp.com",
+            databaseURL: "https://chats-ab4af-default-rtdb.firebaseio.com",
+            projectId: "chats-ab4af",
+            storageBucket: "chats-ab4af.appspot.com",
+            messagingSenderId: "317093436715",
+            appId: "1:317093436715:web:5cf4391b87f51eade4b96e"
+        };
 
-        const contentArea = document.getElementById('content-area');
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-        function showMessage(msg, type) {
-            const messageDiv = contentArea.querySelector('#message-area');
-            if(messageDiv) {
-                messageDiv.innerHTML = msg;
-                messageDiv.className = `message-area ${type}-message`;
-            }
-        }
-        
-        // This function is now correct
-        function togglePasswordVisibility(id, iconEl) {
-            const input = document.getElementById(id);
-            const icon = iconEl.querySelector('i');
-            if(input.type === 'password') {
-                input.type = 'text';
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-            } else {
-                input.type = 'password';
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            if (!auth) return;
-
-            const urlParams = new URLSearchParams(window.location.search);
-            const mode = urlParams.get('mode');
-            const oobCode = urlParams.get('oobCode');
-
-            if (!mode || !oobCode) {
-                contentArea.innerHTML = `<h2>Invalid Link</h2><p class="subtitle error-message">This link is invalid or has expired. Please try again.</p>`;
-                return;
-            }
-
-            switch (mode) {
-                case 'resetPassword':
-                    handlePasswordReset(oobCode);
-                    break;
-                case 'verifyEmail':
-                    handleEmailVerification(oobCode);
-                    break;
-                default:
-                    contentArea.innerHTML = `<h2>Unknown Action</h2><p class="subtitle error-message">The requested action is not recognized.</p>`;
+        // Load and display configuration
+        const configRef = db.ref('config');
+        configRef.on('value', (snapshot) => {
+            const config = snapshot.val();
+            if (config) {
+                document.getElementById('bot-name').value = config.BOT_NAME;
+                document.getElementById('bot-username').value = config.BOT_USERNAME;
+                document.getElementById('reward-ad').value = config.REWARD_PER_AD;
+                document.getElementById('ad-limit').value = config.BASE_AD_LIMIT;
+                document.getElementById('min-withdraw').value = config.MINIMUM_WITHDRAWAL_COINS;
+                document.getElementById('reward-referral').value = config.REWARD_PER_REFERRAL;
+                document.getElementById('max-referrals').value = config.MAX_REFERRALS;
             }
         });
-        
-        function handlePasswordReset(code) {
-            auth.verifyPasswordResetCode(code).then(email => {
-                // The only change is in the line below
-                contentArea.innerHTML = `
-                    <h2>Reset Your Password</h2>
-                    <p class="subtitle">Enter a new password for <strong>${email}</strong></p>
-                    <div class="form-group">
-                        <label for="new-password">New Password</label>
-                        <div class="password-wrapper">
-                           <!-- FIX: The input type is now 'password' by default -->
-                           <input type="password" id="new-password" required placeholder="••••••••">
-                           <span class="password-toggle-icon" onclick="togglePasswordVisibility('new-password', this)"><i class="fas fa-eye"></i></span>
-                        </div>
-                    </div>
-                    <button class="primary-btn" id="confirm-reset-btn">Save New Password</button>
-                    <div id="message-area" class="message-area"></div>
-                `;
 
-                document.getElementById('confirm-reset-btn').addEventListener('click', () => {
-                    const newPassword = document.getElementById('new-password').value;
-                    if (newPassword.length < 6) {
-                        showMessage('Password must be at least 6 characters long.', 'error');
-                        return;
-                    }
-                    showMessage('Saving new password...', 'info');
-                    auth.confirmPasswordReset(code, newPassword).then(() => {
-                        contentArea.innerHTML = `
-                            <div class="success-animation-container">
-                                <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-                                    <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
-                                    <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
-                                </svg>
-                            </div>
-                            <h2>Success!</h2>
-                            <p class="subtitle success-message">Your password has been changed successfully.</p>
-                            <a href="./index.html" class="primary-btn"><i class="fas fa-arrow-left"></i> Back to App and Login</a>
-                        `;
-                    }).catch(err => {
-                        showMessage(`Error: ${err.message}`, 'error');
-                    });
-                });
-
-            }).catch(err => {
-                contentArea.innerHTML = `<h2>Link Expired</h2><p class="subtitle error-message">This password reset link is invalid or has expired. Please request a new one from the app.</p>`;
+        // Save configuration
+        document.getElementById('save-config').addEventListener('click', () => {
+            const newConfig = {
+                BOT_NAME: document.getElementById('bot-name').value,
+                BOT_USERNAME: document.getElementById('bot-username').value,
+                REWARD_PER_AD: Number(document.getElementById('reward-ad').value),
+                BASE_AD_LIMIT: Number(document.getElementById('ad-limit').value),
+                MINIMUM_WITHDRAWAL_COINS: Number(document.getElementById('min-withdraw').value),
+                REWARD_PER_REFERRAL: Number(document.getElementById('reward-referral').value),
+                MAX_REFERRALS: Number(document.getElementById('max-referrals').value),
+            };
+            configRef.update(newConfig).then(() => {
+                const statusMsg = document.getElementById('status-message');
+                statusMsg.textContent = 'Settings saved successfully!';
+                statusMsg.style.color = 'green';
+                setTimeout(() => statusMsg.textContent = '', 3000);
             });
+        });
+
+        // Load and display withdrawals
+        const withdrawalsRef = db.ref('withdrawals');
+        withdrawalsRef.on('value', (snapshot) => {
+            const withdrawals = snapshot.val();
+            const pendingBody = document.querySelector('#pending-table tbody');
+            const processedBody = document.querySelector('#processed-table tbody');
+            pendingBody.innerHTML = '';
+            processedBody.innerHTML = '';
+
+            if (!withdrawals) {
+                pendingBody.innerHTML = '<tr><td colspan="6">No pending withdrawals.</td></tr>';
+                return;
+            }
+            
+            // Sort by timestamp descending
+            const sortedWithdrawals = Object.values(withdrawals).sort((a,b) => b.timestamp - a.timestamp);
+
+            for (const item of sortedWithdrawals) {
+                const date = new Date(item.timestamp).toLocaleString();
+                if (item.status === 'Pending') {
+                    const row = `<tr>
+                        <td>${item.userId}</td>
+                        <td>@${item.username}</td>
+                        <td>${item.amount}</td>
+                        <td>${item.address}</td>
+                        <td>${date}</td>
+                        <td>
+                            <button class="btn btn-approve" onclick="approveWithdrawal('${item.id}', '${item.userId}')">Approve</button>
+                            <button class="btn btn-reject" onclick="rejectWithdrawal('${item.id}', '${item.userId}', ${item.amount})">Reject</button>
+                        </td>
+                    </tr>`;
+                    pendingBody.innerHTML += row;
+                } else {
+                     const row = `<tr>
+                        <td>${item.userId}</td>
+                        <td>@${item.username}</td>
+                        <td>${item.amount}</td>
+                        <td>${item.address}</td>
+                        <td>${date}</td>
+                        <td><span class="status status-${item.status.toLowerCase()}">${item.status}</span></td>
+                    </tr>`;
+                    processedBody.innerHTML += row;
+                }
+            }
+        });
+
+        async function approveWithdrawal(withdrawalId, userId) {
+            const updates = {};
+            updates[`/withdrawals/${withdrawalId}/status`] = 'Approved';
+            updates[`/users/${userId}/withdrawalHistory/${withdrawalId}/status`] = 'Approved';
+            await db.ref().update(updates);
+            alert('Withdrawal Approved!');
         }
 
-        function handleEmailVerification(code) {
-            contentArea.innerHTML = `<h2>Verifying Your Email...</h2><p class="info-message">Please wait a moment.</p>`;
-            auth.applyActionCode(code).then(() => {
-                contentArea.innerHTML = `
-                    <div class="success-animation-container">
-                        <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-                            <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
-                            <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
-                        </svg>
-                    </div>
-                    <h2>Email Verified!</h2>
-                    <p class="subtitle success-message">Thank you! Your email address has been successfully verified.</p>
-                    <a href="./index.html" class="primary-btn"><i class="fas fa-sign-in-alt"></i> Continue to Login</a>
-                `;
-            }).catch(err => {
-                contentArea.innerHTML = `<h2>Verification Failed</h2><p class="subtitle error-message">This verification link is invalid or has expired. Please try to log in again to receive a new link.</p>`;
+        async function rejectWithdrawal(withdrawalId, userId, amount) {
+            // Refund coins to user using a transaction
+            const userCoinsRef = db.ref(`/users/${userId}/coins`);
+            await userCoinsRef.transaction((currentCoins) => {
+                return (currentCoins || 0) + amount;
             });
+
+            const updates = {};
+            updates[`/withdrawals/${withdrawalId}/status`] = 'Rejected';
+            updates[`/users/${userId}/withdrawalHistory/${withdrawalId}/status`] = 'Rejected';
+            await db.ref().update(updates);
+            alert('Withdrawal Rejected and coins refunded!');
         }
     </script>
-
 </body>
-            </html>
+</html>
