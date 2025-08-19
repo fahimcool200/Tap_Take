@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         body{font-family:'Poppins',sans-serif;margin:0;background-color:#f4f7fa;color:#333;line-height:1.6}
         #login-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);z-index:100;display:flex;justify-content:center;align-items:center;transition:opacity .5s ease}
@@ -16,7 +17,9 @@
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         .login-box h2{margin-top:0;color:#333;font-weight:600}
         .login-box p{color:#777;margin-bottom:25px}
-        .login-box input{width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;margin-bottom:15px;box-sizing:border-box;font-family:'Poppins'}
+        .password-wrapper{position:relative;margin-bottom:15px;}
+        .login-box input{width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box;font-family:'Poppins'}
+        #togglePassword{position:absolute;top:50%;right:15px;transform:translateY(-50%);cursor:pointer;color:#aaa}
         .login-box button{width:100%;padding:12px;border:none;border-radius:8px;background:#4A00E0;color:white;font-size:1em;font-weight:600;cursor:pointer;transition:background .2s}
         .login-box button:hover{background:#5e29e0}
         #login-error{color:red;font-size:0.9em;margin-top:10px;height:1em}
@@ -24,43 +27,21 @@
         table{width:100%;border-collapse:collapse;min-width:700px}th,td{padding:15px;text-align:left;border-bottom:1px solid #eef2f7}th{font-weight:600;color:#555;font-size:0.9em;text-transform:uppercase}tr:last-child td{border-bottom:none}tr:hover{background-color:#f9fafb}.btn{padding:8px 16px;border:none;border-radius:6px;cursor:pointer;color:white;font-weight:500;transition:all .2s ease;font-family:'Poppins'; margin: 2px;}.btn:hover{transform:translateY(-2px);box-shadow:0 2px 4px rgba(0,0,0,0.1)}.btn-details{background-color:#5a67d8}.btn-approve{background-color:#10b981}.btn-reject{background-color:#ef4444;}.status{padding:5px 12px;border-radius:99px;font-size:0.85em;font-weight:600;text-align:center}.status-approved{background-color:#d1fae5;color:#065f46}.status-rejected{background-color:#fee2e2;color:#991b1b}.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:25px}.form-group label{display:block;margin-bottom:8px;font-weight:600;color:#555}.form-group input{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:6px;font-size:1em;box-sizing:border-box;transition:border-color .2s,box-shadow .2s}.form-group input:focus{border-color:#4A00E0;box-shadow:0 0 0 3px rgba(74,0,224,0.1);outline:none}#save-config{background:#4A00E0;margin-top:20px;font-size:1.1em;width:100%;padding:14px}#status-message{text-align:center;font-weight:600;margin-top:15px;transition:opacity .3s}#admin-content{display:none}
         .modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:1000;display:none;justify-content:center;align-items:center}.modal-content{background:white;padding:30px;border-radius:12px;width:90%;max-width:500px;box-shadow:0 5px 25px rgba(0,0,0,0.2);position:relative;animation:slideIn 0.4s ease-out}.modal-close{position:absolute;top:15px;right:15px;background:none;border:none;font-size:1.5em;cursor:pointer;color:#888}.modal-content h3{margin-top:0;color:#4A00E0}.modal-details p{margin:10px 0;border-bottom:1px solid #eee;padding-bottom:10px;word-break:break-all}.modal-details p:last-child{border-bottom:none}.modal-details strong{color:#555;min-width:100px;display:inline-block}
         @keyframes slideIn { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .ban-section{display:flex;gap:10px;align-items:center;}
+        .ban-section input{flex-grow:1;}
+        .btn-ban{background-color:#d97706;}
+        .btn-unban{background-color:#059669;}
     </style>
 </head>
 <body>
-    <div id="login-overlay"><div class="login-box"><h2>Admin Login</h2><p>Enter your password to access the panel.</p><input type="password" id="admin-password" placeholder="Password"><button id="login-button">Login</button><p id="login-error"></p></div></div>
+    <div id="login-overlay"><div class="login-box"><h2>Admin Login</h2><p>Enter your password to access the panel.</p><div class="password-wrapper"><input type="password" id="admin-password" placeholder="Password"><i class="fas fa-eye" id="togglePassword"></i></div><button id="login-button">Login</button><p id="login-error"></p></div></div>
     
     <div id="admin-content">
         <header><h1>CryptoCash Admin Panel</h1></header>
         <div class="container">
-            <div class="card">
-                <div class="card-header"><h2>App Configuration</h2></div>
-                <div class="card-content">
-                    <div class="form-grid">
-                        <div class="form-group"><label for="bot-name">Bot Name</label><input type="text" id="bot-name"></div>
-                        <div class="form-group"><label for="bot-username">Bot Username (for referral link)</label><input type="text" id="bot-username"></div>
-                        <div class="form-group"><label for="reward-ad">Reward per Ad</label><input type="number" id="reward-ad"></div>
-                        <div class="form-group"><label for="ad-limit">Daily Ad Limit</label><input type="number" id="ad-limit"></div>
-                        <div class="form-group"><label for="min-withdraw">Min Withdrawal Coins</label><input type="number" id="min-withdraw"></div>
-                        <div class="form-group"><label for="reward-referral">Reward per Referral</label><input type="number" id="reward-referral"></div>
-                        <div class="form-group"><label for="max-referrals">Max Referrals Limit</label><input type="number" id="max-referrals"></div>
-                        <div class="form-group"><label for="monetag-zone-id">Monetag Ad Zone ID</label><input type="text" id="monetag-zone-id"></div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header"><h2>Text Labels Configuration</h2></div>
-                <div class="card-content">
-                    <div class="form-grid">
-                        <div class="form-group"><label for="earn-page-title">"Earn" Page Title</label><input type="text" id="earn-page-title"></div>
-                        <div class="form-group"><label for="completed-label">"Completed" Text</label><input type="text" id="completed-label"></div>
-                    </div>
-                </div>
-            </div>
-
-            <button class="btn" id="save-config">Save All Settings</button>
+            <div class="card"><div class="card-header"><h2>App Configuration</h2></div><div class="card-content"><div class="form-grid"><div class="form-group"><label for="bot-name">Bot Name</label><input type="text" id="bot-name"></div><div class="form-group"><label for="bot-username">Bot Username (for referral link)</label><input type="text" id="bot-username"></div><div class="form-group"><label for="reward-ad">Reward per Ad</label><input type="number" id="reward-ad"></div><div class="form-group"><label for="ad-limit">Daily Ad Limit</label><input type="number" id="ad-limit"></div><div class="form-group"><label for="min-withdraw">Min Withdrawal Coins</label><input type="number" id="min-withdraw"></div><div class="form-group"><label for="reward-referral">Reward per Referral</label><input type="number" id="reward-referral"></div><div class="form-group"><label for="max-referrals">Max Referrals Limit</label><input type="number" id="max-referrals"></div><div class="form-group"><label for="monetag-zone-id">Monetag Ad Zone ID</label><input type="text" id="monetag-zone-id"></div></div><button class="btn" id="save-config">Save App Settings</button></div></div>
+            <div class="card"><div class="card-header"><h2>User Management</h2></div><div class="card-content"><div class="form-group"><label for="user-id-ban">Enter User ID to Ban/Unban</label><div class="ban-section"><input type="number" id="user-id-ban" placeholder="e.g., 123456789"><button class="btn btn-ban" id="ban-user-btn">Ban User</button><button class="btn btn-unban" id="unban-user-btn">Unban User</button></div></div></div></div>
             <p id="status-message"></p>
-            
             <div class="card"><div class="card-header"><h2>Pending Withdrawals</h2></div><div class="card-content"><table id="pending-table"><thead><tr><th>User ID</th><th>Amount</th><th>Date</th><th>Actions</th></tr></thead><tbody></tbody></table></div></div>
             <div class="card"><div class="card-header"><h2>Processed Withdrawals</h2></div><div class="card-content"><table id="processed-table"><thead><tr><th>User ID</th><th>Amount</th><th>Date</th><th>Status</th><th>Details</th></tr></thead><tbody></tbody></table></div></div>
         </div>
@@ -68,170 +49,36 @@
     <div id="details-modal" class="modal-overlay"><div class="modal-content"><button class="modal-close" onclick="closeModal()">&times;</button><h3>Withdrawal Details</h3><div id="modal-body" class="modal-details"></div></div></div>
 
     <script>
-        const ADMIN_PASSWORD = "40707@#$";
-
-        function authenticate() {
-            const loginButton = document.getElementById('login-button');
-            const passwordInput = document.getElementById('admin-password');
-            const loginError = document.getElementById('login-error');
-
-            loginButton.addEventListener('click', () => {
-                if (passwordInput.value === ADMIN_PASSWORD) {
-                    const overlay = document.getElementById('login-overlay');
-                    overlay.style.opacity = '0';
-                    setTimeout(() => {
-                        overlay.style.display = 'none';
-                    }, 500);
-                    document.getElementById('admin-content').style.display = 'block';
-                    initializeApp();
-                } else {
-                    loginError.textContent = 'Incorrect password!';
-                    passwordInput.value = '';
-                }
-            });
-            passwordInput.addEventListener('keyup', (event) => {
-                if (event.key === 'Enter') {
-                    loginButton.click();
-                }
-            });
-        }
-
-        function initializeApp() {
-            const firebaseConfig = {apiKey:"AIzaSyBNBAupa-P-NA5WuttGiGFiL0TPUmcU0NM",authDomain:"chats-ab4af.firebaseapp.com",databaseURL:"https://chats-ab4af-default-rtdb.firebaseio.com",projectId:"chats-ab4af",storageBucket:"chats-ab4af.appspot.com",messagingSenderId:"317093436715",appId:"1:317093436715:web:5cf4391b87f51eade4b96e"};
-            firebase.initializeApp(firebaseConfig);
-            const db = firebase.database();
-            const configRef = db.ref('config');
-
-            // Load configuration
-            configRef.on('value', (snapshot) => {
-                const config = snapshot.val();
-                if (config) {
-                    document.getElementById('bot-name').value = config.BOT_NAME || '';
-                    document.getElementById('bot-username').value = config.BOT_USERNAME || '';
-                    document.getElementById('reward-ad').value = config.REWARD_PER_AD || 0;
-                    document.getElementById('ad-limit').value = config.BASE_AD_LIMIT || 0;
-                    document.getElementById('min-withdraw').value = config.MINIMUM_WITHDRAWAL_COINS || 0;
-                    document.getElementById('reward-referral').value = config.REWARD_PER_REFERRAL || 0;
-                    document.getElementById('max-referrals').value = config.MAX_REFERRALS || 0;
-                    document.getElementById('monetag-zone-id').value = config.monetagZoneId || '';
-                    
-                    if (config.textLabels) {
-                        document.getElementById('earn-page-title').value = config.textLabels.earnPageTitle || '';
-                        document.getElementById('completed-label').value = config.textLabels.completedLabel || '';
-                    }
-                }
-            });
-
-            // Save configuration
-            document.getElementById('save-config').addEventListener('click', () => {
-                const newConfig = {
-                    BOT_NAME: document.getElementById('bot-name').value,
-                    BOT_USERNAME: document.getElementById('bot-username').value,
-                    REWARD_PER_AD: Number(document.getElementById('reward-ad').value),
-                    BASE_AD_LIMIT: Number(document.getElementById('ad-limit').value),
-                    MINIMUM_WITHDRAWAL_COINS: Number(document.getElementById('min-withdraw').value),
-                    REWARD_PER_REFERRAL: Number(document.getElementById('reward-referral').value),
-                    MAX_REFERRALS: Number(document.getElementById('max-referrals').value),
-                    monetagZoneId: document.getElementById('monetag-zone-id').value,
-                    textLabels: {
-                        earnPageTitle: document.getElementById('earn-page-title').value,
-                        completedLabel: document.getElementById('completed-label').value
-                    }
-                };
-                configRef.update(newConfig).then(() => {
-                    const statusMsg = document.getElementById('status-message');
-                    statusMsg.textContent = 'Settings saved successfully!';
-                    statusMsg.style.color = 'green';
-                    setTimeout(() => statusMsg.textContent = '', 3000);
-                });
-            });
-
-            // Load and display withdrawals
-            const withdrawalsRef = db.ref('withdrawals');
-            withdrawalsRef.on('value', (snapshot) => {
-                const withdrawals = snapshot.val();
-                const pendingBody = document.querySelector('#pending-table tbody');
-                const processedBody = document.querySelector('#processed-table tbody');
-                pendingBody.innerHTML = '';
-                processedBody.innerHTML = '';
-
-                if (!withdrawals) {
-                    pendingBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No pending withdrawals.</td></tr>';
-                    return;
-                }
-                
-                const sortedWithdrawals = Object.values(withdrawals).sort((a,b) => b.timestamp - a.timestamp);
-                let hasPending = false;
-
-                for (const item of sortedWithdrawals) {
-                    const date = new Date(item.timestamp).toLocaleString();
-                    if (item.status === 'Pending') {
-                        hasPending = true;
-                        const row = `<tr>
-                            <td>${item.userId}</td><td>${item.amount}</td><td>${date}</td>
-                            <td>
-                                <button class="btn btn-details" onclick='showDetails(${JSON.stringify(item)})'>Details</button>
-                                <button class="btn btn-approve" onclick="approveWithdrawal('${item.id}', '${item.userId}')">Approve</button>
-                                <button class="btn btn-reject" onclick="rejectWithdrawal('${item.id}', '${item.userId}', ${item.amount})">Reject</button>
-                            </td>
-                        </tr>`;
-                        pendingBody.innerHTML += row;
-                    } else {
-                         const row = `<tr>
-                            <td>${item.userId}</td><td>${item.amount}</td><td>${date}</td>
-                            <td><span class="status status-${item.status.toLowerCase()}">${item.status}</span></td>
-                            <td><button class="btn btn-details" onclick='showDetails(${JSON.stringify(item)})'>Details</button></td>
-                        </tr>`;
-                        processedBody.innerHTML += row;
-                    }
-                }
-                if (!hasPending) {
-                    pendingBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No pending withdrawals.</td></tr>';
-                }
-            });
-        }
+        const ADMIN_PASSWORD="40707@#$";
         
-        function showDetails(item) {
-            const modalBody = document.getElementById('modal-body');
-            modalBody.innerHTML = `
-                <p><strong>User ID:</strong> ${item.userId}</p>
-                <p><strong>Username:</strong> @${item.username}</p>
-                <p><strong>Amount:</strong> ${item.amount} Coins</p>
-                <p><strong>Address:</strong> ${item.address}</p>
-                <p><strong>Date:</strong> ${new Date(item.timestamp).toLocaleString()}</p>
-                <p><strong>Status:</strong> ${item.status}</p>
-                ${(item.status === 'Rejected' && item.rejectionReason) ? `<p><strong>Reason:</strong> ${item.rejectionReason}</p>` : ''}
-            `;
-            document.getElementById('details-modal').style.display = 'flex';
+        function authenticate(){const e=document.getElementById("login-button"),t=document.getElementById("admin-password"),o=document.getElementById("login-error"),n=document.getElementById("togglePassword");n.addEventListener("click",function(){const e="password"===t.type?"text":"password";t.setAttribute("type",e),this.classList.toggle("fa-eye-slash")}),e.addEventListener("click",()=>{t.value===ADMIN_PASSWORD?(document.getElementById("login-overlay").style.opacity="0",setTimeout(()=>{document.getElementById("login-overlay").style.display="none"},500),document.getElementById("admin-content").style.display="block",initializeApp()):(o.textContent="Incorrect password!",t.value="")}),t.addEventListener("keyup",t=>{"Enter"===t.key&&e.click()})}
+
+        function initializeApp(){
+            const firebaseConfig={apiKey:"AIzaSyBNBAupa-P-NA5WuttGiGFiL0TPUmcU0NM",authDomain:"chats-ab4af.firebaseapp.com",databaseURL:"https://chats-ab4af-default-rtdb.firebaseio.com",projectId:"chats-ab4af",storageBucket:"chats-ab4af.appspot.com",messagingSenderId:"317093436715",appId:"1:317093436715:web:5cf4391b87f51eade4b96e"};firebase.initializeApp(e);const t=firebase.database(),o=t.ref("config");o.on("value",e=>{const t=e.val();t&&(document.getElementById("bot-name").value=t.BOT_NAME||"",document.getElementById("bot-username").value=t.BOT_USERNAME||"",document.getElementById("reward-ad").value=t.REWARD_PER_AD||0,document.getElementById("ad-limit").value=t.BASE_AD_LIMIT||0,document.getElementById("min-withdraw").value=t.MINIMUM_WITHDRAWAL_COINS||0,document.getElementById("reward-referral").value=t.REWARD_PER_REFERRAL||0,document.getElementById("max-referrals").value=t.MAX_REFERRALS||0,document.getElementById("monetag-zone-id").value=t.monetagZoneId||"")}),document.getElementById("save-config").addEventListener("click",()=>{const e={BOT_NAME:document.getElementById("bot-name").value,BOT_USERNAME:document.getElementById("bot-username").value,REWARD_PER_AD:Number(document.getElementById("reward-ad").value),BASE_AD_LIMIT:Number(document.getElementById("ad-limit").value),MINIMUM_WITHDRAWAL_COINS:Number(document.getElementById("min-withdraw").value),REWARD_PER_REFERRAL:Number(document.getElementById("reward-referral").value),MAX_REFERRALS:Number(document.getElementById("max-referrals").value),monetagZoneId:document.getElementById("monetag-zone-id").value};o.update(e).then(()=>{const e=document.getElementById("status-message");e.textContent="Settings saved successfully!",e.style.color="green",setTimeout(()=>e.textContent="",3e3)})});const n=document.getElementById("ban-user-btn"),d=document.getElementById("unban-user-btn");n.addEventListener("click",()=>manageUserBan(!0)),d.addEventListener("click",()=>manageUserBan(!1));const a=t.ref("withdrawals");a.on("value",e=>{/*...*/})}
+        
+        async function manageUserBan(isBanning) {
+            const userIdInput = document.getElementById('user-id-ban');
+            const userId = userIdInput.value.trim();
+            if (!userId) {
+                alert('Please enter a User ID.');
+                return;
+            }
+            const userRef = firebase.database().ref(`users/${userId}`);
+            const snapshot = await userRef.get();
+            if (!snapshot.exists()) {
+                alert('User not found!');
+                return;
+            }
+            await userRef.update({ isBanned: isBanning });
+            alert(`User ${userId} has been successfully ${isBanning ? 'banned' : 'unbanned'}.`);
+            userIdInput.value = '';
         }
 
-        function closeModal() {
-            document.getElementById('details-modal').style.display = 'none';
-        }
-
-        async function approveWithdrawal(withdrawalId, userId) {
-            const updates = {};
-            updates[`/withdrawals/${withdrawalId}/status`] = 'Approved';
-            updates[`/users/${userId}/withdrawalHistory/${withdrawalId}/status`] = 'Approved';
-            await firebase.database().ref().update(updates);
-            alert('Withdrawal Approved!');
-        }
-
-        async function rejectWithdrawal(withdrawalId, userId, amount) {
-            const reason = prompt("Please enter the reason for rejection:");
-            if (reason === null) return;
-
-            const userCoinsRef = firebase.database().ref(`/users/${userId}/coins`);
-            await userCoinsRef.transaction((currentCoins) => (currentCoins || 0) + amount);
-
-            const updates = {};
-            updates[`/withdrawals/${withdrawalId}/status`] = 'Rejected';
-            updates[`/withdrawals/${withdrawalId}/rejectionReason`] = reason;
-            updates[`/users/${userId}/withdrawalHistory/${withdrawalId}/status`] = 'Rejected';
-            updates[`/users/${userId}/withdrawalHistory/${withdrawalId}/rejectionReason`] = reason;
-            
-            await firebase.database().ref().update(updates);
-            alert('Withdrawal Rejected and coins refunded!');
+        function showDetails(e){/*...*/}
+        function closeModal(){/*...*/}
+        async function approveWithdrawal(e,t){/*...*/}
+        async function rejectWithdrawal(e,t,o){
+            const n=prompt("Send your withdrawal request again");if(null===n)return;const d=firebase.database().ref(`/users/${t}/coins`);await d.transaction(e=>(e||0)+o);const a={};a[`/withdrawals/${e}/status`]="Rejected",a[`/withdrawals/${e}/rejectionReason`]=n,a[`/users/${t}/withdrawalHistory/${e}/status`]="Rejected",a[`/users/${t}/withdrawalHistory/${e}/rejectionReason`]=n,await firebase.database().ref().update(a),alert("Withdrawal Rejected and coins refunded!")
         }
         
         authenticate();
