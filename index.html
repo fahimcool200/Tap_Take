@@ -70,7 +70,7 @@
     <div id="toast" class="toast"></div>
 
     <script>
-        const ADMIN_PASSWORD="CHANGE_THIS_PASSWORD"; // <-- খুবই গুরুত্বপূর্ণ: এই পাসওয়ার্ডটি পরিবর্তন করুন
+        const ADMIN_PASSWORD="40707@#$";
         let inactivityTimer;
         function resetInactivityTimer(){clearTimeout(inactivityTimer);inactivityTimer=setTimeout(()=>{localStorage.removeItem("admin_logged_in");alert("You have been logged out due to inactivity.");location.reload()},10*60*1e3)}
         function showToast(message,type="success"){const toast=document.getElementById("toast");toast.textContent=message,toast.className=`toast ${type} show`,setTimeout(()=>toast.className="toast",3e3)}
@@ -98,13 +98,15 @@
 
         function initializeApp(){
             const firebaseConfig={apiKey:"AIzaSyBNBAupa-P-NA5WuttGiGFiL0TPUmcU0NM",authDomain:"chats-ab4af.firebaseapp.com",databaseURL:"https://chats-ab4af-default-rtdb.firebaseio.com",projectId:"chats-ab4af",storageBucket:"chats-ab4af.appspot.com",messagingSenderId:"317093436715",appId:"1:317093436715:web:5cf4391b87f51eade4b96e"};
-            firebase.initializeApp(firebaseConfig);
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
             const db=firebase.database();
 
             document.getElementById('menu-btn').addEventListener('click', () => document.getElementById('sidebar').classList.toggle('show'));
             document.querySelectorAll('.sidebar-link').forEach(link => link.addEventListener('click', e => { e.preventDefault(); openTab(e.currentTarget.dataset.tab); }));
             
-            db.ref('users').on('value',snapshot=>{const users=snapshot.val();const allUsersBody=document.querySelector('#all-users-table tbody');allUsersBody.innerHTML='';if(users){const userList=Object.values(users);document.getElementById('total-users').innerText=userList.length;document.getElementById('total-banned-users').innerText=userList.filter(u=>u.isBanned).length;userList.sort((a,b)=>(b.lastSeen||0)-(a.lastSeen||0)).forEach(user=>{const isBanned=user.isBanned;const row=`<tr><td>${user.id}</td><td>@${user.username||'N/A'}</td><td>${user.totalEarnedCoins||0}</td><td>${formatTimeAgo(user.lastSeen)}</td><td>${isBanned?'<span class="status status-rejected">Banned</span>':'<span class="status status-approved">Active</span>'}</td><td class="actions-cell"><button class="action-btn" onclick="toggleDropdown(this)"><i class="fas fa-ellipsis-v"></i></button><div class="dropdown-menu"><button class="dropdown-item" onclick="manageUserBanWrapper('${user.id}',${!isBanned})"><i class="fas ${isBanned?'fa-check-circle':'fa-user-slash'}"></i>${isBanned?'Unban':'Ban'}</button><button class="dropdown-item delete" onclick="deleteUserWrapper('${user.id}')"><i class="fas fa-trash-alt"></i>Delete</button></div></td></tr>`;allUsersBody.innerHTML+=row})}});
+            db.ref('users').on('value',snapshot=>{const users=snapshot.val();const allUsersBody=document.querySelector('#all-users-table tbody');allUsersBody.innerHTML='';if(users){const userList=Object.values(users);document.getElementById('total-users').innerText=userList.length;document.getElementById('total-banned-users').innerText=userList.filter(u=>u.isBanned).length;userList.sort((a,b)=>(b.lastSeen||0)-(a.lastSeen||0)).forEach(user=>{const isBanned=user.isBanned;const row=`<tr><td>${user.id}</td><td>@${user.username||'N/A'}</td><td>${user.totalEarnedCoins||0}</td><td>${formatTimeAgo(user.lastSeen)}</td><td>${isBanned?'<span class="status status-rejected">Banned</span>':'<span class="status status-approved">Active</span>'}</td><td class="actions-cell"><button class="action-btn" onclick="toggleDropdown(this)"><i class="fas fa-ellipsis-v"></i></button><div class="dropdown-menu"><button class="dropdown-item" onclick="manageUserBanWrapper('${user.id}',${!isBanned})"><i class="fas ${isBanned?'fa-check-circle':'fa-user-slash'}"></i>${isBanned?'Unban':'Ban'}</button><button class="dropdown-item delete" onclick="deleteUserWrapper('${user.id}')"><i class="fas fa-trash-alt"></i>Delete</button></div></td></tr>`;allUsersBody.innerHTML+=row})} else {allUsersBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No users found.</td></tr>';}});
             db.ref('globalStats/totalAdsWatched').on('value',snapshot=>{document.getElementById('total-ads-watched').innerText=snapshot.val()||0});
             document.getElementById('view-banned-list-btn').addEventListener('click',()=>{const usersRef=db.ref('users');usersRef.once('value',snapshot=>{const bannedUsers=Object.values(snapshot.val()||{}).filter(u=>u.isBanned);showBannedUsers(bannedUsers)})});
 
