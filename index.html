@@ -60,7 +60,7 @@
 
         <div class="container">
             <div id="Dashboard" class="tab-content active"><div class="card-content"><div class="dashboard-grid"><div class="stat-card"><i class="fas fa-users"></i><h3 id="total-users">0</h3><p>Total Users</p></div><div class="stat-card"><i class="fas fa-play-circle"></i><h3 id="total-ads-watched">0</h3><p>Total Ads Watched</p></div><div class="stat-card"><i class="fas fa-user-slash"></i><h3 id="total-banned-users">0</h3><p>Banned Users</p><button class="view-list-btn" id="view-banned-list-btn">View List</button></div></div></div></div>
-            <div id="Users" class="tab-content"><div class="card"><div class="card-header"><h2>All Users</h2></div><div class="card-content"><table id="all-users-table"><thead><tr><th>User ID</th><th>Username</th><th>Total Earned</th><th>Status</th><th style="text-align:center;">Actions</th></tr></thead><tbody><tr><td colspan="5" style="text-align:center;">Loading users...</td></tr></tbody></table></div></div></div>
+            <div id="Users" class="tab-content"><div class="card"><div class="card-header"><h2>All Users</h2></div><div class="card-content"><table id="all-users-table"><thead><tr><th>User ID</th><th>Username</th><th>Total Earned</th><th>Last Seen</th><th>Status</th><th style="text-align:center;">Actions</th></tr></thead><tbody><tr><td colspan="6" style="text-align:center;">Loading users...</td></tr></tbody></table></div></div></div>
             <div id="Withdrawals" class="tab-content"><div class="card"><div class="card-header"><h2>Pending Withdrawals</h2></div><div class="card-content"><table id="pending-table"><thead><tr><th>User ID</th><th>Amount</th><th>Date</th><th>Actions</th></tr></thead><tbody></tbody></table></div></div><div class="card"><div class="card-header"><h2>Processed Withdrawals</h2></div><div class="card-content"><table id="processed-table"><thead><tr><th>User ID</th><th>Amount</th><th>Date</th><th>Status</th><th>Details</th></tr></thead><tbody></tbody></table></div></div></div>
             <div id="Settings" class="tab-content"><div class="card"><div class="card-header"><h2>App Configuration</h2></div><div class="card-content"><div class="form-grid"><div class="form-group"><label for="bot-name">Bot Name</label><input type="text" id="bot-name"></div><div class="form-group"><label for="bot-username">Bot Username</label><input type="text" id="bot-username"></div><div class="form-group"><label for="reward-ad">Reward per Ad</label><input type="number" id="reward-ad"></div><div class="form-group"><label for="ad-limit">Daily Ad Limit</label><input type="number" id="ad-limit"></div><div class="form-group"><label for="min-withdraw">Min Withdrawal Coins</label><input type="number" id="min-withdraw"></div><div class="form-group"><label for="reward-referral">Reward per Referral</label><input type="number" id="reward-referral"></div><div class="form-group"><label for="max-referrals">Max Referrals Limit</label><input type="number" id="max-referrals"></div><div class="form-group"><label for="monetag-zone-id">Monetag Ad Zone ID</label><input type="text" id="monetag-zone-id"></div></div><button class="btn" id="save-config">Save App Settings</button><p id="status-message"></p></div></div></div>
         </div>
@@ -70,7 +70,7 @@
     <div id="toast" class="toast"></div>
 
     <script>
-        const ADMIN_PASSWORD="40707@#$";
+        const ADMIN_PASSWORD="CHANGE_THIS_PASSWORD"; // <-- খুবই গুরুত্বপূর্ণ: এই পাসওয়ার্ডটি পরিবর্তন করুন
         let inactivityTimer;
         function resetInactivityTimer(){clearTimeout(inactivityTimer);inactivityTimer=setTimeout(()=>{localStorage.removeItem("admin_logged_in");alert("You have been logged out due to inactivity.");location.reload()},10*60*1e3)}
         function showToast(message,type="success"){const toast=document.getElementById("toast");toast.textContent=message,toast.className=`toast ${type} show`,setTimeout(()=>toast.className="toast",3e3)}
@@ -78,6 +78,23 @@
         function authenticate(){const e=document.getElementById("login-button"),t=document.getElementById("admin-password"),o=document.getElementById("login-error"),n=document.getElementById("togglePassword");n.addEventListener("click",function(){const e="password"===t.type?"text":"password";t.setAttribute("type",e),this.classList.toggle("fa-eye-slash")}),e.addEventListener("click",()=>{t.value===ADMIN_PASSWORD?(localStorage.setItem("admin_logged_in","true"),showAdminContent()):(o.textContent="Incorrect password!",t.value="")}),t.addEventListener("keyup",t=>{"Enter"===t.key&&e.click()})}
         function showAdminContent(){document.getElementById("login-overlay").style.display="none";document.getElementById("admin-content").style.display="block";initializeApp();resetInactivityTimer();['load','mousemove','mousedown','click','scroll','keypress'].forEach(e=>document.addEventListener(e,resetInactivityTimer,!1))}
         if(localStorage.getItem("admin_logged_in")==="true"){showAdminContent()}else{authenticate()}
+
+        function formatTimeAgo(timestamp) {
+            if (!timestamp) return 'Never';
+            const now = new Date();
+            const seconds = Math.floor((now - new Date(timestamp)) / 1000);
+            let interval = seconds / 31536000;
+            if (interval > 1) return Math.floor(interval) + " years ago";
+            interval = seconds / 2592000;
+            if (interval > 1) return Math.floor(interval) + " months ago";
+            interval = seconds / 86400;
+            if (interval > 1) return Math.floor(interval) + " days ago";
+            interval = seconds / 3600;
+            if (interval > 1) return Math.floor(interval) + " hours ago";
+            interval = seconds / 60;
+            if (interval > 1) return Math.floor(interval) + " minutes ago";
+            return Math.floor(seconds) < 30 ? "Just now" : Math.floor(seconds) + " seconds ago";
+        }
 
         function initializeApp(){
             const firebaseConfig={apiKey:"AIzaSyBNBAupa-P-NA5WuttGiGFiL0TPUmcU0NM",authDomain:"chats-ab4af.firebaseapp.com",databaseURL:"https://chats-ab4af-default-rtdb.firebaseio.com",projectId:"chats-ab4af",storageBucket:"chats-ab4af.appspot.com",messagingSenderId:"317093436715",appId:"1:317093436715:web:5cf4391b87f51eade4b96e"};
@@ -87,7 +104,7 @@
             document.getElementById('menu-btn').addEventListener('click', () => document.getElementById('sidebar').classList.toggle('show'));
             document.querySelectorAll('.sidebar-link').forEach(link => link.addEventListener('click', e => { e.preventDefault(); openTab(e.currentTarget.dataset.tab); }));
             
-            db.ref('users').on('value',snapshot=>{const users=snapshot.val();const allUsersBody=document.querySelector('#all-users-table tbody');allUsersBody.innerHTML='';if(users){const userList=Object.values(users);document.getElementById('total-users').innerText=userList.length;document.getElementById('total-banned-users').innerText=userList.filter(u=>u.isBanned).length;userList.sort((a,b)=>(b.totalEarnedCoins||0)-(a.totalEarnedCoins||0)).forEach(user=>{const isBanned=user.isBanned;const row=`<tr><td>${user.id}</td><td>@${user.username||'N/A'}</td><td>${user.totalEarnedCoins||0}</td><td>${isBanned?'<span class="status status-rejected">Banned</span>':'<span class="status status-approved">Active</span>'}</td><td class="actions-cell"><button class="action-btn" onclick="toggleDropdown(this)"><i class="fas fa-ellipsis-v"></i></button><div class="dropdown-menu"><button class="dropdown-item" onclick="manageUserBanWrapper('${user.id}',${!isBanned})"><i class="fas ${isBanned?'fa-check-circle':'fa-user-slash'}"></i>${isBanned?'Unban':'Ban'}</button><button class="dropdown-item delete" onclick="deleteUserWrapper('${user.id}')"><i class="fas fa-trash-alt"></i>Delete</button></div></td></tr>`;allUsersBody.innerHTML+=row})}});
+            db.ref('users').on('value',snapshot=>{const users=snapshot.val();const allUsersBody=document.querySelector('#all-users-table tbody');allUsersBody.innerHTML='';if(users){const userList=Object.values(users);document.getElementById('total-users').innerText=userList.length;document.getElementById('total-banned-users').innerText=userList.filter(u=>u.isBanned).length;userList.sort((a,b)=>(b.lastSeen||0)-(a.lastSeen||0)).forEach(user=>{const isBanned=user.isBanned;const row=`<tr><td>${user.id}</td><td>@${user.username||'N/A'}</td><td>${user.totalEarnedCoins||0}</td><td>${formatTimeAgo(user.lastSeen)}</td><td>${isBanned?'<span class="status status-rejected">Banned</span>':'<span class="status status-approved">Active</span>'}</td><td class="actions-cell"><button class="action-btn" onclick="toggleDropdown(this)"><i class="fas fa-ellipsis-v"></i></button><div class="dropdown-menu"><button class="dropdown-item" onclick="manageUserBanWrapper('${user.id}',${!isBanned})"><i class="fas ${isBanned?'fa-check-circle':'fa-user-slash'}"></i>${isBanned?'Unban':'Ban'}</button><button class="dropdown-item delete" onclick="deleteUserWrapper('${user.id}')"><i class="fas fa-trash-alt"></i>Delete</button></div></td></tr>`;allUsersBody.innerHTML+=row})}});
             db.ref('globalStats/totalAdsWatched').on('value',snapshot=>{document.getElementById('total-ads-watched').innerText=snapshot.val()||0});
             document.getElementById('view-banned-list-btn').addEventListener('click',()=>{const usersRef=db.ref('users');usersRef.once('value',snapshot=>{const bannedUsers=Object.values(snapshot.val()||{}).filter(u=>u.isBanned);showBannedUsers(bannedUsers)})});
 
@@ -115,7 +132,7 @@
         function showDetails(item){document.getElementById("modal-body").innerHTML=`<p><strong>User ID:</strong> ${item.userId}</p><p><strong>Username:</strong> @${item.username||'N/A'}</p><p><strong>Amount:</strong> ${item.amount} Coins</p><p><strong>Address:</strong> ${item.address}</p><p><strong>Date:</strong> ${new Date(item.timestamp).toLocaleString()}</p><p><strong>Status:</strong> ${item.status}</p>${item.status==="Rejected"&&item.rejectionReason?`<p><strong>Reason:</strong> ${item.rejectionReason}</p>`:""}`;document.querySelector("#details-modal h3").innerText="Withdrawal Details";document.getElementById('details-modal').classList.add('show')}
         function closeModal(modalId){document.getElementById(modalId).classList.remove('show')}
         async function approveWithdrawal(e,t){const o={};o[`/withdrawals/${e}/status`]="Approved",o[`/users/${t}/withdrawalHistory/${e}/status`]="Approved",await firebase.database().ref().update(o),showToast("Withdrawal Approved!")}
-        async function rejectWithdrawal(e,t,o){const n=prompt("Send your withdrawal request again");if(null===n)return;const d=firebase.database().ref(`/users/${t}/coins`);await d.transaction(e=>(e||0)+o);const a={};a[`/withdrawals/${e}/status`]="Rejected",a[`/withdrawals/${e}/rejectionReason`]=n,a[`/users/${t}/withdrawalHistory/${e}/status`]="Rejected",a[`/users/${t}/withdrawalHistory/${e}/rejectionReason`]=n,await firebase.database().ref().update(a),showToast("Withdrawal Rejected and coins refunded.","error")}
+        async function rejectWithdrawal(e,t,o){const n=prompt("Please provide a reason for rejection:");if(null===n)return;const d=firebase.database().ref(`/users/${t}/coins`);await d.transaction(e=>(e||0)+o);const a={};a[`/withdrawals/${e}/status`]="Rejected",a[`/withdrawals/${e}/rejectionReason`]=n,a[`/users/${t}/withdrawalHistory/${e}/status`]="Rejected",a[`/users/${t}/withdrawalHistory/${e}/rejectionReason`]=n,await firebase.database().ref().update(a),showToast("Withdrawal Rejected and coins refunded.","error")}
     </script>
 </body>
 </html>
